@@ -1,0 +1,45 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+---
+description:项目编码规则
+globs:
+alwaysApply: true
+---
+
+# 🔹 项目类型
+- 本项目使用原生 HTML + CSS + JavaScript，不允许使用框架（如 React、Vue、Angular）。
+
+# 🔹 HTML 规范
+- 必须使用语义化标签，保持完整结构（doctype, html, head, body）。
+- 图片必须包含 alt 属性。
+- 表单必须使用 label 标签。
+- 禁止在 HTML 中写大量 JS，统一放入独立的 js 文件。
+- 禁止使用内联样式，CSS 必须外链。
+
+# 🔹 CSS 规范
+- 统一使用 class 选择器，禁止使用 id 选择器。
+- 样式命名采用 BEM 规范（block__element--modifier）。
+- 禁止使用 !important，除非有明确注释说明。
+- 优先使用 flex / grid 实现布局。
+- CSS 文件放在 css/ 目录，必须外链引入。
+
+# 🔹 JS 规范
+- 统一使用 const / let，禁止使用 var。
+- 所有文件开启 'use strict'。
+- DOM 操作必须通过 querySelector / querySelectorAll。
+- 事件绑定使用 addEventListener，不允许写在 HTML 标签上。
+- 函数必须有明确命名，禁止随处写匿名函数。
+- 模块化代码必须拆分文件（支持时使用 type="module"）。
+
+# 🔹 代码风格
+- 缩进统一 2 空格。
+- JS 语句必须加分号。
+- 每行不超过 100 字符。
+- 提交前保证在 Chrome/Firefox/Edge 下运行正常。
+
+# 🔹 其他
+- 统一使用中文回答
+

@@ -1,0 +1,169 @@
+/* 基础样式 */
+:root {
+	--bg: #0f172a;
+	--panel: #111827;
+	--text: #e5e7eb;
+	--muted: #9ca3af;
+	--primary: #3b82f6;
+	--secondary: #374151;
+	--success: #10b981;
+	--danger: #ef4444;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+	margin: 0;
+	background: var(--bg);
+	color: var(--text);
+	font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+}
+
+/* 工具栏 */
+.toolbar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 12px 16px;
+	background: var(--panel);
+	border-bottom: 1px solid #1f2937;
+	position: sticky;
+	top: 0;
+	z-index: 10;
+}
+.toolbar .btn { margin-right: 8px; }
+.btn {
+	background: var(--secondary);
+	border: 1px solid #1f2937;
+	color: var(--text);
+	padding: 8px 12px;
+	border-radius: 6px;
+	cursor: pointer;
+}
+.btn:hover { filter: brightness(1.05); }
+.btn-primary { background: var(--primary); border-color: #1d4ed8; }
+.btn-secondary { background: #1f2937; }
+.input {
+	background: #0b1220;
+	color: var(--text);
+	border: 1px solid #1f2937;
+	padding: 8px 10px;
+	border-radius: 6px;
+	min-width: 120px;
+}
+
+/* 主布局 */
+.main {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 12px;
+	padding: 12px;
+	height: calc(100vh - 64px);
+}
+.list-panel, .chart-panel {
+	background: var(--panel);
+	border: 1px solid #1f2937;
+	border-radius: 10px;
+	padding: 8px;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+}
+
+/* 表格 */
+.asset-table { width: 100%; border-collapse: collapse; }
+.asset-table th, .asset-table td {
+	padding: 10px 8px;
+	border-bottom: 1px solid #1f2937;
+	text-align: left;
+	font-size: 14px;
+}
+.asset-table thead th { position: sticky; top: 0; background: #0b1220; z-index: 1; }
+.list-panel { overflow: auto; }
+.action-links button { margin-right: 8px; }
+
+/* Treemap 区域 */
+.chart-header { display: flex; align-items: center; justify-content: space-between; padding: 0 4px 8px 4px; }
+.muted { color: var(--muted); font-size: 12px; }
+.treemap { position: relative; flex: 1; overflow: auto; background: #0b1220; border-radius: 8px; }
+.treemap-node {
+	position: absolute;
+	border-radius: 6px;
+	padding: 6px;
+	color: #fff;
+	font-size: 12px;
+	overflow: hidden;
+	border: 1px solid rgba(255,255,255,0.1);
+	cursor: pointer;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+.treemap-node .name { font-weight: 600; opacity: 0.9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.treemap-node .value { font-size: 11px; opacity: 0.85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* 保障极小块也不至于看不见边框和内容 */
+.treemap-node { min-width: 8px; min-height: 8px; }
+
+/* 类别分组框 */
+.treemap-group {
+	position: absolute;
+	border: 1px solid rgba(255,255,255,0.12);
+	border-radius: 8px;
+	pointer-events: none; /* 不拦截内部块交互 */
+	background: linear-gradient(to bottom, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+}
+.treemap-group::before {
+	content: attr(data-type);
+	position: absolute;
+	top: 6px;
+	left: 8px;
+	font-size: 12px;
+	font-weight: 600;
+	color: rgba(255,255,255,0.8);
+}
+
+/* Tooltip */
+.tooltip {
+	position: fixed;
+	background: #111827;
+	border: 1px solid #1f2937;
+	padding: 8px 10px;
+	border-radius: 6px;
+	pointer-events: none;
+	white-space: nowrap;
+	box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+	font-size: 12px;
+}
+
+/* Modal */
+.modal-overlay {
+	position: fixed;
+	inset: 0;
+	background: rgba(0,0,0,0.6);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.modal {
+	width: 420px;
+	background: var(--panel);
+	border: 1px solid #1f2937;
+	border-radius: 10px;
+	padding: 16px;
+}
+.form-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; }
+
+/* 响应式 */
+@media (max-width: 1200px) {
+	.main { grid-template-columns: 1fr; height: auto; }
+	.chart-panel { height: 60vh; }
+} 
+
+.format-note { margin: 10px 12px 0 12px; border: 1px solid #1f2937; border-radius: 8px; background: #0b1220; }
+.format-note > summary { cursor: pointer; padding: 10px 12px; color: var(--text); }
+.format-note[open] > summary { border-bottom: 1px solid #1f2937; }
+.format-note .format-content { padding: 10px 12px; color: var(--muted); }
+.format-note pre { background: #0a0f1c; padding: 10px; border-radius: 6px; overflow: auto; border: 1px solid #1f2937; } 

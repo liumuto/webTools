@@ -1,0 +1,198 @@
+[
+    {
+      "name": "余额宝",
+      "type": "货币基金",
+      "value": 86981,
+      "currency": "CNY",
+      "remark": "长期持有"
+    },
+    {
+      "name": "银行存款",
+      "type": "货币基金",
+      "value": 8361,
+      "currency": "CNY",
+      "remark": "长期持有"
+    },
+    {
+      "name": "黄金",
+      "type": "场外基金",
+      "value": 759,
+      "currency": "CNY",
+      "remark": "核心持仓"
+    },
+    {
+      "name": "银河创新成长混合",
+      "type": "场外基金",
+      "value": 197.5,
+      "currency": "CNY",
+      "remark": "核心持仓"
+    },
+    {
+      "name": "富国中小盘（香港上市）混合A",
+      "type": "场外基金",
+      "value": 22951,
+      "currency": "CNY",
+      "remark": "核心持仓"
+    },
+    {
+      "name": "富国中证新能源指数A",
+      "type": "场外基金",
+      "value": 9588,
+      "currency": "CNY",
+      "remark": "核心持仓"
+    },
+    {
+      "name": "易方达中概互联ETF",
+      "type": "场外基金",
+      "value": 21562,
+      "currency": "CNY",
+      "remark": "核心持仓"
+    },
+    {
+      "name": "华安纳斯达克100ETF",
+      "type": "场外基金",
+      "value": 22949,
+      "currency": "CNY",
+      "remark": "核心持仓"
+    },
+    {
+      "name": "易方达蓝筹精选混合",
+      "type": "场外基金",
+      "value": 15332,
+      "currency": "CNY",
+      "remark": "核心持仓"
+    },
+    {
+      "name": "易方达中债7-10年期国开行债券指数A",
+      "type": "场外基金",
+      "value": 57223,
+      "currency": "CNY",
+      "remark": "核心持仓"
+    },
+    {
+      "name": "中欧医疗健康混合C",
+      "type": "场外基金",
+      "value": 5003,
+      "currency": "CNY",
+      "remark": "核心持仓"
+    },
+    {
+      "name": "创金合信中证红利低波指数C",
+      "type": "场外基金",
+      "value": 57216,
+      "currency": "CNY",
+      "remark": "核心持仓"
+    },
+    {
+      "name": "招商中证白酒指数A",
+      "type": "场外基金",
+      "value": 8844,
+      "currency": "CNY",
+      "remark": "核心持仓"
+    },
+    {
+      "name": "易方达国防军工A",
+      "type": "场外基金",
+      "value": 1400,
+      "currency": "CNY",
+      "remark": "核心持仓"
+    },
+    {
+      "name": "广发双擎升级混合A",
+      "type": "场外基金",
+      "value": 1006,
+      "currency": "CNY",
+      "remark": "核心持仓"
+    },
+    {
+      "name": "平安银行",
+      "type": "股票",
+      "value": 2354,
+      "currency": "CNY",
+      "remark": "核心持仓"
+    },
+    {
+      "name": "格力电器",
+      "type": "股票",
+      "value": 24696,
+      "currency": "CNY",
+      "remark": "核心持仓"
+    },
+    {
+      "name": "广发证券",
+      "type": "股票",
+      "value": 4106,
+      "currency": "CNY",
+      "remark": "核心持仓"
+    },
+    {
+      "name": "贝因美",
+      "type": "股票",
+      "value": 2058,
+      "currency": "CNY",
+      "remark": "核心持仓"
+    },
+    {
+      "name": "用友网络",
+      "type": "股票",
+      "value": 7275,
+      "currency": "CNY",
+      "remark": "核心持仓"
+    },
+    {
+      "name": "东方明珠",
+      "type": "股票",
+      "value": 1706,
+      "currency": "CNY",
+      "remark": "核心持仓"
+    },
+    {
+      "name": "券商ETF",
+      "type": "场内基金",
+      "value": 59,
+      "currency": "CNY",
+      "remark": "核心持仓"
+    },
+    {
+      "name": "酒ETF",
+      "type": "场内基金",
+      "value": 5616,
+      "currency": "CNY",
+      "remark": "核心持仓"
+    },
+    {
+      "name": "HK创新药ETF",
+      "type": "场内基金",
+      "value": 1558,
+      "currency": "CNY",
+      "remark": "核心持仓"
+    },
+    {
+      "name": "煤炭ETF",
+      "type": "场内基金",
+      "value": 3156,
+      "currency": "CNY",
+      "remark": "核心持仓"
+    },
+    {
+      "name": "通信ETF",
+      "type": "场内基金",
+      "value": 2452,
+      "currency": "CNY",
+      "remark": "核心持仓"
+    },
+    {
+      "name": "化工50ETF",
+      "type": "场内基金",
+      "value": 3004,
+      "currency": "CNY",
+      "remark": "核心持仓"
+    },
+    {
+      "name": "黄金50ETF",
+      "type": "场内基金",
+      "value": 1589,
+      "currency": "CNY",
+      "remark": "核心持仓"
+    }
+  ]
