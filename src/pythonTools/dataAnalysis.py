@@ -22,7 +22,12 @@ class DataAnalyzer:
         """加载股票数据"""
         try:
             with open(filename, 'r', encoding='utf-8') as f:
-                self.data = json.load(f)
+                data = json.load(f)
+                # 确保数据是列表格式
+                if isinstance(data, list):
+                    self.data = data
+                else:
+                    self.data = [data]
             print(f"成功加载数据，共 {len(self.data)} 条记录")
         except FileNotFoundError:
             print(f"文件 {filename} 不存在，使用模拟数据")
@@ -57,9 +62,26 @@ class DataAnalyzer:
             print("没有数据可分析")
             return
         
-        prices = [item["price"] for item in self.data]
-        changes = [item["change"] for item in self.data]
-        volumes = [item["volume"] for item in self.data]
+        # 处理不同的数据格式
+        prices = []
+        changes = []
+        volumes = []
+        
+        for item in self.data:
+            if "price" in item:
+                prices.append(item["price"])
+            elif "当前价格" in item:
+                prices.append(item["当前价格"])
+            
+            if "change" in item:
+                changes.append(item["change"])
+            elif "涨跌幅" in item:
+                changes.append(item["涨跌幅"])
+            
+            if "volume" in item:
+                volumes.append(item["volume"])
+            elif "成交量" in item:
+                volumes.append(item["成交量"])
         
         print(f"价格统计:")
         print(f"  最高价: {max(prices):.2f}")
@@ -73,9 +95,12 @@ class DataAnalyzer:
         print(f"  平均涨跌: {statistics.mean(changes):.2f}%")
         
         print(f"\n成交量统计:")
-        print(f"  最大成交量: {max(volumes):,}")
-        print(f"  最小成交量: {min(volumes):,}")
-        print(f"  平均成交量: {statistics.mean(volumes):,.0f}")
+        if volumes:
+            print(f"  最大成交量: {max(volumes):,}")
+            print(f"  最小成交量: {min(volumes):,}")
+            print(f"  平均成交量: {statistics.mean(volumes):,.0f}")
+        else:
+            print("  无成交量数据")
     
     def stock_analysis(self):
         """股票分析"""
@@ -88,17 +113,53 @@ class DataAnalyzer:
         # 按股票代码分组
         stock_groups = {}
         for item in self.data:
-            code = item["code"]
+            # 处理不同的键名格式
+            if "code" in item:
+                code = item["code"]
+            elif "股票代码" in item:
+                code = item["股票代码"]
+            else:
+                continue
+                
             if code not in stock_groups:
                 stock_groups[code] = []
             stock_groups[code].append(item)
         
         print("各股票表现:")
         for code, stocks in stock_groups.items():
-            name = stocks[0]["name"]
-            avg_price = statistics.mean([s["price"] for s in stocks])
-            avg_change = statistics.mean([s["change"] for s in stocks])
-            total_volume = sum([s["volume"] for s in stocks])
+            # 处理不同的键名格式
+            if "name" in stocks[0]:
+                name = stocks[0]["name"]
+            elif "股票名称" in stocks[0]:
+                name = stocks[0]["股票名称"]
+            else:
+                name = "未知"
+            
+            # 计算平均价格
+            prices = []
+            for s in stocks:
+                if "price" in s:
+                    prices.append(s["price"])
+                elif "当前价格" in s:
+                    prices.append(s["当前价格"])
+            avg_price = statistics.mean(prices) if prices else 0
+            
+            # 计算平均涨跌幅
+            changes = []
+            for s in stocks:
+                if "change" in s:
+                    changes.append(s["change"])
+                elif "涨跌幅" in s:
+                    changes.append(s["涨跌幅"])
+            avg_change = statistics.mean(changes) if changes else 0
+            
+            # 计算总成交量
+            total_volume = 0
+            for s in stocks:
+                if "volume" in s:
+                    total_volume += s["volume"]
+                elif "成交量" in s:
+                    total_volume += s["成交量"]
             
             print(f"  {code} ({name}):")
             print(f"    平均价格: {avg_price:.2f}")
@@ -114,19 +175,46 @@ class DataAnalyzer:
             return
         
         # 按日期排序
-        sorted_data = sorted(self.data, key=lambda x: x["date"])
+        def get_date(item):
+            if "date" in item:
+                return item["date"]
+            elif "日期" in item:
+                return item["日期"]
+            else:
+                return "1970-01-01"  # 默认日期
+        
+        sorted_data = sorted(self.data, key=get_date)
         
         # 计算价格趋势
-        prices = [item["price"] for item in sorted_data]
+        prices = []
+        for item in sorted_data:
+            if "price" in item:
+                prices.append(item["price"])
+            elif "当前价格" in item:
+                prices.append(item["当前价格"])
         if len(prices) >= 2:
             price_trend = "上涨" if prices[-1] > prices[0] else "下跌"
             price_change = ((prices[-1] - prices[0]) / prices[0]) * 100
             print(f"价格趋势: {price_trend} ({price_change:.2f}%)")
         
         # 计算涨跌分布
-        positive_changes = [item for item in self.data if item["change"] > 0]
-        negative_changes = [item for item in self.data if item["change"] < 0]
-        neutral_changes = [item for item in self.data if item["change"] == 0]
+        positive_changes = []
+        negative_changes = []
+        neutral_changes = []
+        
+        for item in self.data:
+            change_value = 0
+            if "change" in item:
+                change_value = item["change"]
+            elif "涨跌幅" in item:
+                change_value = item["涨跌幅"]
+            
+            if change_value > 0:
+                positive_changes.append(item)
+            elif change_value < 0:
+                negative_changes.append(item)
+            else:
+                neutral_changes.append(item)
         
         print(f"涨跌分布:")
         print(f"  上涨: {len(positive_changes)} 条 ({len(positive_changes)/len(self.data)*100:.1f}%)")
@@ -145,8 +233,19 @@ class DataAnalyzer:
             
             # 基础统计
             if self.data:
-                prices = [item["price"] for item in self.data]
-                changes = [item["change"] for item in self.data]
+                prices = []
+                changes = []
+                
+                for item in self.data:
+                    if "price" in item:
+                        prices.append(item["price"])
+                    elif "当前价格" in item:
+                        prices.append(item["当前价格"])
+                    
+                    if "change" in item:
+                        changes.append(item["change"])
+                    elif "涨跌幅" in item:
+                        changes.append(item["涨跌幅"])
                 
                 f.write("价格统计:\n")
                 f.write(f"  最高价: {max(prices):.2f}\n")
