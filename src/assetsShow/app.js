@@ -761,7 +761,7 @@ function renderAll() {
 	renderTreemap();
 }
 
-// 初始化
+// 初始化，测试下
 window.addEventListener('DOMContentLoaded', () => {
 	bindEvents();
 	renderAll();
