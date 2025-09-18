@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>量化选股平台</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部标题 -->
+        <header class="header">
+            <h1>量化选股平台</h1>
+            <p>基于多因子模型的智能选股系统</p>
+        </header>
+
+        <!-- 主要内容区域 -->
+        <main class="main-content">
+            <!-- 左侧策略配置面板 -->
+            <aside class="strategy-panel">
+                <div class="panel-header">
+                    <h2>策略配置</h2>
+                </div>
+                
+                <div class="config-section">
+                    <h3>基础设置</h3>
+                    <div class="form-group">
+                        <label for="stockPool">股票池</label>
+                        <select id="stockPool" class="form-control">
+                            <option value="all">全A股</option>
+                            <option value="hs300">沪深300</option>
+                            <option value="zz500">中证500</option>
+                            <option value="sz50">上证50</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="timeRange">回测周期</label>
+                        <select id="timeRange" class="form-control">
+                            <option value="1y">1年</option>
+                            <option value="2y">2年</option>
+                            <option value="3y">3年</option>
+                            <option value="5y">5年</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="config-section">
+                    <h3>选股因子</h3>
+                    
+                    <div class="factor-group">
+                        <div class="factor-item">
+                            <label for="peWeight">PE权重</label>
+                            <input type="range" id="peWeight" min="0" max="100" value="20" class="slider">
+                            <span class="slider-value">20%</span>
+                        </div>
+                        
+                        <div class="factor-item">
+                            <label for="pbWeight">PB权重</label>
+                            <input type="range" id="pbWeight" min="0" max="100" value="15" class="slider">
+                            <span class="slider-value">15%</span>
+                        </div>
+                        
+                        <div class="factor-item">
+                            <label for="roeWeight">ROE权重</label>
+                            <input type="range" id="roeWeight" min="0" max="100" value="25" class="slider">
+                            <span class="slider-value">25%</span>
+                        </div>
+                        
+                        <div class="factor-item">
+                            <label for="momentumWeight">动量权重</label>
+                            <input type="range" id="momentumWeight" min="0" max="100" value="20" class="slider">
+                            <span class="slider-value">20%</span>
+                        </div>
+                        
+                        <div class="factor-item">
+                            <label for="volatilityWeight">波动率权重</label>
+                            <input type="range" id="volatilityWeight" min="0" max="100" value="20" class="slider">
+                            <span class="slider-value">20%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="config-section">
+                    <h3>筛选条件</h3>
+                    
+                    <div class="form-group">
+                        <label for="minMarketCap">最小市值(亿)</label>
+                        <input type="number" id="minMarketCap" value="50" class="form-control">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="maxPe">最大PE</label>
+                        <input type="number" id="maxPe" value="50" class="form-control">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="minRoe">最小ROE(%)</label>
+                        <input type="number" id="minRoe" value="5" class="form-control">
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button id="runStrategy" class="btn btn-primary">运行策略</button>
+                    <button id="saveStrategy" class="btn btn-secondary">保存策略</button>
+                    <button id="loadStrategy" class="btn btn-secondary">加载策略</button>
+                </div>
+            </aside>
+
+            <!-- 右侧结果展示区 -->
+            <section class="results-panel">
+                <!-- 收益曲线图 -->
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3>策略收益曲线</h3>
+                        <div class="chart-controls">
+                            <button id="toggleBenchmark" class="btn btn-small">显示基准</button>
+                        </div>
+                    </div>
+                    <div id="equityChart" class="chart"></div>
+                </div>
+
+                <!-- 绩效指标 -->
+                <div class="metrics-container">
+                    <h3>策略绩效</h3>
+                    <div class="metrics-grid">
+                        <div class="metric-item">
+                            <span class="metric-label">年化收益率</span>
+                            <span class="metric-value" id="annualReturn">--</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">夏普比率</span>
+                            <span class="metric-value" id="sharpeRatio">--</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">最大回撤</span>
+                            <span class="metric-value" id="maxDrawdown">--</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">胜率</span>
+                            <span class="metric-value" id="winRate">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 选股结果表格 -->
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3>选股结果</h3>
+                        <div class="table-controls">
+                            <input type="text" id="searchStock" placeholder="搜索股票..." class="search-input">
+                            <select id="sortBy" class="form-control">
+                                <option value="score">综合评分</option>
+                                <option value="pe">PE</option>
+                                <option value="pb">PB</option>
+                                <option value="roe">ROE</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table id="stockTable" class="stock-table">
+                            <thead>
+                                <tr>
+                                    <th>股票代码</th>
+                                    <th>股票名称</th>
+                                    <th>综合评分</th>
+                                    <th>PE</th>
+                                    <th>PB</th>
+                                    <th>ROE(%)</th>
+                                    <th>市值(亿)</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="stockTableBody">
+                                <!-- 动态填充 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- 加载提示 -->
+        <div id="loadingOverlay" class="loading-overlay">
+            <div class="loading-spinner"></div>
+            <p>策略运行中，请稍候...</p>
+        </div>
+
+        <!-- 消息提示 -->
+        <div id="messageToast" class="message-toast"></div>
+    </div>
+
+    <script src="../js/app.js"></script>
+</body>
+</html>
