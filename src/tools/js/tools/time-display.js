@@ -564,6 +564,14 @@ class TimeDisplayTool {
   }
 }
 
+// 导出到全局作用域
+if (typeof window !== 'undefined') {
+  window.TimeDisplayTool = TimeDisplayTool;
+  console.log('✅ TimeDisplayTool 已导出到全局作用域');
+} else {
+  console.warn('⚠️ window 对象不可用，无法导出 TimeDisplayTool');
+}
+
 // 注册工具
 if (typeof window !== 'undefined' && window.ToolRegistry) {
   window.ToolRegistry.register({

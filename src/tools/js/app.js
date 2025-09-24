@@ -5,6 +5,8 @@
  */
 class WebToolsApp {
   constructor() {
+    console.log('🏗️ WebToolsApp 构造函数开始执行...');
+    
     this.tools = [];
     this.categories = ['all', 'text', 'time', 'encode', 'color'];
     this.favorites = new Set();
@@ -13,6 +15,17 @@ class WebToolsApp {
     this.isFavoritesMode = false;
     this.toolRegistry = new Map();
     
+    console.log('📊 应用状态初始化完成:', {
+      toolsCount: this.tools.length,
+      categories: this.categories,
+      searchQuery: this.searchQuery,
+      currentCategory: this.currentCategory,
+      isFavoritesMode: this.isFavoritesMode,
+      favoritesCount: this.favorites.size,
+      toolRegistrySize: this.toolRegistry.size
+    });
+    
+    console.log('🚀 开始调用 init() 方法...');
     this.init();
   }
 
@@ -20,55 +33,108 @@ class WebToolsApp {
    * 初始化应用
    */
   init() {
-    this.loadFavorites();
-    this.registerTools();
-    this.bindEvents();
-    this.renderTools();
+    try {
+      console.log('🚀 应用开始初始化...');
+      
+      // 等待一小段时间确保所有脚本都已加载
+      setTimeout(() => {
+        console.log('📋 步骤1: 加载收藏');
+        this.loadFavorites();
+        console.log('📋 步骤2: 注册工具');
+        this.registerTools();
+        console.log('📋 步骤3: 绑定事件');
+        this.bindEvents();
+        console.log('📋 步骤4: 渲染工具');
+        this.renderTools();
+        console.log('📋 步骤5: 隐藏加载动画');
+        this.hideLoading();
+        console.log('✅ 应用初始化完成');
+      }, 100);
+      
+    } catch (error) {
+      console.error('❌ 应用初始化失败:', error);
+      console.error('❌ 错误堆栈:', error.stack);
+      this.showError('应用初始化失败，请刷新页面重试');
+    }
   }
 
   /**
    * 注册所有工具
    */
   registerTools() {
+    console.log('🔧 开始注册工具...');
+    
+    // 检查工具类是否可用
+    const toolClasses = {
+      'StringSplitterTool': window.StringSplitterTool,
+      'TimeDisplayTool': window.TimeDisplayTool,
+      'EncoderTool': window.EncoderTool,
+      'ColorPickerTool': window.ColorPickerTool
+    };
+
+    console.log('🔍 检查工具类可用性:');
+    Object.entries(toolClasses).forEach(([name, cls]) => {
+      console.log(`  ${cls ? '✅' : '❌'} ${name}:`, cls ? '已加载' : '未找到');
+    });
+
+    // 检查缺失的工具类
+    const missingTools = Object.entries(toolClasses)
+      .filter(([name, cls]) => !cls)
+      .map(([name]) => name);
+
+    if (missingTools.length > 0) {
+      console.error('❌ 缺少工具类:', missingTools);
+      this.showError(`缺少工具类: ${missingTools.join(', ')}`);
+      return;
+    }
+
+    console.log('✅ 所有工具类检查通过，开始注册...');
+
     // 字符串分割工具
+    console.log('📝 注册字符串分割工具...');
     this.registerTool({
       id: 'string-splitter',
       name: '字符串分割器',
       description: '将字符串按分隔符分割为网格数据，支持自定义分隔符和CSV导出',
       category: 'text',
       icon: 'scissors',
-      component: StringSplitterTool
+      component: window.StringSplitterTool
     });
 
     // 时间显示工具
+    console.log('⏰ 注册时间显示工具...');
     this.registerTool({
       id: 'time-display',
       name: '网络时间显示',
       description: '显示当前网络时间，支持时区转换、时间戳转换和倒计时功能',
       category: 'time',
       icon: 'clock',
-      component: TimeDisplayTool
+      component: window.TimeDisplayTool
     });
 
     // 编码转换工具
+    console.log('🔐 注册编码转换工具...');
     this.registerTool({
       id: 'encoder',
       name: '编码转换器',
       description: '支持Base64编解码、URL编解码、JSON格式化和二维码生成',
       category: 'encode',
       icon: 'code',
-      component: EncoderTool
+      component: window.EncoderTool
     });
 
     // 颜色选择器工具
+    console.log('🎨 注册颜色选择器工具...');
     this.registerTool({
       id: 'color-picker',
       name: '颜色选择器',
       description: '支持HEX、RGB、HSL格式转换，提供配色方案和渐变生成器',
       category: 'color',
       icon: 'palette',
-      component: ColorPickerTool
+      component: window.ColorPickerTool
     });
+
+    console.log('✅ 所有工具注册完成，已注册工具数量:', this.toolRegistry.size);
   }
 
   /**
@@ -83,9 +149,16 @@ class WebToolsApp {
    * 绑定事件监听器
    */
   bindEvents() {
+    console.log('🔗 开始绑定事件...');
+    
     // 搜索功能
     const searchInput = document.getElementById('searchInput');
     const searchBtn = document.getElementById('searchBtn');
+    
+    console.log('🔍 搜索元素检查:', {
+      searchInput: !!searchInput,
+      searchBtn: !!searchBtn
+    });
     
     if (searchInput) {
       searchInput.addEventListener('input', (e) => {
@@ -206,29 +279,65 @@ class WebToolsApp {
    * 渲染工具列表
    */
   renderTools() {
+    console.log('🎨 开始渲染工具...');
+    
     const toolsGrid = document.getElementById('toolsGrid');
     const emptyState = document.getElementById('emptyState');
     
-    if (!toolsGrid) return;
+    if (!toolsGrid) {
+      console.error('❌ 找不到 toolsGrid 元素');
+      return;
+    }
+
+    console.log('📊 工具注册表大小:', this.toolRegistry.size);
+    console.log('📊 已注册的工具:', Array.from(this.toolRegistry.keys()));
 
     // 获取过滤后的工具列表
     const filteredTools = this.getFilteredTools();
+    console.log('🔍 过滤后的工具数量:', filteredTools.length);
+    console.log('🔍 过滤后的工具列表:', filteredTools.map(t => t.id));
 
     // 清空网格
     toolsGrid.innerHTML = '';
 
     if (filteredTools.length === 0) {
+      console.log('📭 没有工具需要显示，显示空状态');
       // 显示空状态
-      emptyState.style.display = 'block';
-      this.updateEmptyStateMessage();
+      if (emptyState) {
+        emptyState.style.display = 'block';
+        this.updateEmptyStateMessage();
+      }
     } else {
+      console.log('📦 开始渲染工具卡片...');
       // 隐藏空状态
-      emptyState.style.display = 'none';
+      if (emptyState) {
+        emptyState.style.display = 'none';
+      }
 
       // 渲染工具卡片
-      filteredTools.forEach(tool => {
+      filteredTools.forEach((tool, index) => {
+        console.log(`📦 渲染第 ${index + 1} 个工具:`, tool.id);
         const toolCard = this.createToolCard(tool);
-        toolsGrid.appendChild(toolCard);
+        if (toolCard) {
+          toolsGrid.appendChild(toolCard);
+          console.log(`✅ 工具 ${tool.id} 渲染成功`);
+        } else {
+          console.error(`❌ 工具 ${tool.id} 渲染失败`);
+        }
+      });
+      
+      console.log('✅ 工具渲染完成');
+    
+      // 调试：检查工具网格容器的实际内容
+      console.log('🔍 工具网格容器检查:', {
+        childrenCount: toolsGrid.children.length,
+        innerHTML: toolsGrid.innerHTML.substring(0, 200) + '...',
+        computedStyle: {
+          display: window.getComputedStyle(toolsGrid).display,
+          visibility: window.getComputedStyle(toolsGrid).visibility,
+          opacity: window.getComputedStyle(toolsGrid).opacity,
+          height: window.getComputedStyle(toolsGrid).height
+        }
       });
     }
   }
@@ -456,6 +565,56 @@ class WebToolsApp {
   }
 
   /**
+   * 隐藏加载动画
+   */
+  hideLoading() {
+    console.log('🔄 隐藏加载动画...');
+    const loading = document.getElementById('loading');
+    if (loading) {
+      console.log('🔍 找到加载动画元素:', loading);
+      console.log('🔍 加载动画当前类名:', loading.className);
+      
+      // 强制隐藏加载动画 - 多重保障
+      loading.classList.add('loading--hidden');
+      loading.style.display = 'none';
+      loading.style.visibility = 'hidden';
+      loading.style.opacity = '0';
+      loading.style.pointerEvents = 'none';
+      
+      console.log('🔍 添加隐藏类后的类名:', loading.className);
+      console.log('🔍 强制设置display为none');
+      console.log('✅ 加载动画已隐藏');
+    } else {
+      console.error('❌ 找不到加载动画元素 #loading');
+      console.log('🔍 当前页面所有元素:', document.querySelectorAll('*'));
+    }
+  }
+
+  /**
+   * 显示错误信息
+   */
+  showError(message) {
+    console.error('🚨 显示错误信息:', message);
+    const toolsGrid = document.getElementById('toolsGrid');
+    if (toolsGrid) {
+      toolsGrid.innerHTML = `
+        <div class="error-state">
+          <div class="error-state__icon">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            </svg>
+          </div>
+          <h3 class="error-state__title">加载失败</h3>
+          <p class="error-state__description">${message}</p>
+          <button class="error-state__btn" onclick="location.reload()">重新加载</button>
+        </div>
+      `;
+    }
+    // 确保隐藏加载动画
+    this.hideLoading();
+  }
+
+  /**
    * 防抖函数
    */
   debounce(func, wait) {
@@ -490,7 +649,27 @@ window.ToolRegistry = {
 
 // 页面加载完成后初始化应用
 document.addEventListener('DOMContentLoaded', () => {
-  window.webToolsApp = new WebToolsApp();
+  console.log('📄 DOM 内容加载完成，开始初始化应用...');
+  console.log('🌍 当前环境信息:', {
+    userAgent: navigator.userAgent,
+    location: window.location.href,
+    timestamp: new Date().toISOString()
+  });
+  
+  // 检查关键元素是否存在
+  const criticalElements = ['toolsGrid', 'loading', 'searchInput'];
+  criticalElements.forEach(id => {
+    const element = document.getElementById(id);
+    console.log(`🔍 检查关键元素 #${id}:`, element ? '✅ 存在' : '❌ 不存在');
+  });
+  
+  try {
+    window.webToolsApp = new WebToolsApp();
+    console.log('✅ 应用实例创建成功:', window.webToolsApp);
+  } catch (error) {
+    console.error('❌ 应用实例创建失败:', error);
+    console.error('❌ 错误堆栈:', error.stack);
+  }
 });
 
 // 导出应用类（如果使用模块化）

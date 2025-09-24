@@ -1,189 +1,91 @@
-# WebTools Hub - H5工具集平台
+# 🔧 工具集模块 (Tools)
 
-一个基于原生HTML、CSS、JavaScript开发的实用工具集合平台，提供多种常用工具功能。
+## 🔹 模块简介
 
-## 🚀 功能特性
+H5工具集平台，提供各种实用的在线工具，包括字符串处理、编码解码、颜色选择、时间显示等功能。
 
-### 📝 文本处理工具
-- **字符串分割器**: 将字符串按分隔符分割为网格数据，支持自定义分隔符和CSV导出
+## 🔹 功能特性
 
-### ⏰ 时间工具
-- **网络时间显示**: 显示当前网络时间，支持时区转换、时间戳转换和倒计时功能
+- **字符串工具**：字符串分割、编码解码、格式化
+- **颜色工具**：颜色选择器、颜色转换、调色板
+- **时间工具**：时间显示、时区转换、时间计算
+- **编码工具**：Base64、URL编码、HTML实体编码
+- **其他工具**：二维码生成、图片处理、文件转换
 
-### 🔧 编码转换工具
-- **编码转换器**: 支持Base64编解码、URL编解码、JSON格式化和二维码生成
-
-### 🎨 颜色工具
-- **颜色选择器**: 支持HEX、RGB、HSL格式转换，提供配色方案和渐变生成器
-
-## 🛠️ 技术栈
-
-- **前端**: 原生HTML5 + CSS3 + JavaScript (ES6+)
-- **样式**: BEM命名规范，响应式设计
-- **架构**: 模块化组件设计，工具注册机制
-- **兼容性**: 支持现代浏览器 (Chrome, Firefox, Edge, Safari)
-
-## 📁 项目结构
+## 🔹 目录结构
 
 ```
-src/tools/
-├── tools.html              # 主页面
-├── css/                    # 样式文件
-│   ├── common.css          # 通用样式
-│   ├── layout.css          # 布局样式
-│   └── components.css      # 组件样式
-├── js/                     # JavaScript文件
-│   ├── utils.js            # 工具函数
-│   ├── app.js              # 主应用逻辑
-│   ├── components/         # 组件
-│   │   ├── tool-card.js    # 工具卡片组件
-│   │   └── search-bar.js   # 搜索栏组件
-│   └── tools/              # 工具实现
-│       ├── string-splitter.js
-│       ├── time-display.js
-│       ├── encoder.js
-│       └── color-picker.js
-└── README.md               # 项目说明
+tools/
+├── docs/                    # 文档目录
+│   ├── ToolsPrd.md         # 产品需求文档
+│   ├── technical.md        # 技术文档
+│   └── qa.md              # 对话记录
+├── data/                   # 数据目录
+│   ├── input/             # 输入数据
+│   ├── output/            # 输出数据
+│   └── export/            # 导出数据
+├── css/                    # 样式目录
+│   ├── common.css         # 通用样式
+│   ├── layout.css         # 布局样式
+│   └── components.css     # 组件样式
+├── js/                     # JavaScript 逻辑目录
+│   ├── app.js             # 主应用逻辑
+│   ├── utils.js           # 工具函数
+│   ├── components/        # 组件模块
+│   │   ├── search-bar.js  # 搜索栏组件
+│   │   └── tool-card.js   # 工具卡片组件
+│   └── tools/             # 工具模块
+│       ├── color-picker.js # 颜色选择器
+│       ├── encoder.js      # 编码工具
+│       ├── string-splitter.js # 字符串分割器
+│       └── time-display.js # 时间显示
+├── ui/                     # UI 界面目录
+│   ├── index.html         # 主页面
+│   └── assets/            # 静态资源
+│       └── images/        # 图片资源
+└── README.md              # 模块说明文档
 ```
 
-## 🚀 快速开始
+## 🔹 使用方法
 
-### 1. 本地运行
+1. 打开 `ui/index.html` 文件
+2. 浏览或搜索需要的工具
+3. 点击工具卡片进入具体工具页面
+4. 使用工具功能完成相应任务
 
-```bash
-# 进入项目目录
-cd src/tools
+## 🔹 工具列表
 
-# 启动本地服务器
-python -m http.server 8000
-# 或者使用Node.js
-npx serve .
-# 或者使用PHP
-php -S localhost:8000
-```
+### 字符串工具
+- **字符串分割器**：按分隔符分割字符串
+- **编码解码器**：Base64、URL编码等
+- **格式转换器**：大小写转换、去空格等
 
-### 2. 访问应用
+### 颜色工具
+- **颜色选择器**：可视化颜色选择
+- **颜色转换器**：RGB、HEX、HSL转换
+- **调色板生成器**：生成配色方案
 
-打开浏览器访问: `http://localhost:8000/tools.html`
+### 时间工具
+- **时间显示**：当前时间、倒计时
+- **时区转换**：不同时区时间转换
+- **时间计算**：时间加减运算
 
-## 💡 使用说明
+### 编码工具
+- **Base64编码**：文本和图片Base64编码
+- **URL编码**：URL参数编码解码
+- **HTML实体**：HTML特殊字符编码
 
-### 主界面功能
+## 🔹 技术栈
 
-1. **工具分类**: 点击顶部导航栏切换不同类别的工具
-2. **搜索功能**: 在搜索框中输入关键词快速查找工具
-3. **收藏功能**: 点击收藏按钮查看收藏的工具
-4. **工具使用**: 点击工具卡片打开详细功能页面
+- 原生 HTML5 + CSS3 + JavaScript
+- 模块化组件设计
+- 响应式布局
+- 现代化UI设计
 
-### 工具详细功能
+## 🔹 开发规范
 
-#### 字符串分割器
-- 输入要分割的文本内容
-- 选择或自定义分隔符
-- 实时预览分割结果
-- 导出CSV格式文件
-
-#### 网络时间显示
-- 查看当前时间和日期
-- 支持多时区显示
-- 时间戳转换功能
-- 倒计时器功能
-
-#### 编码转换器
-- Base64编解码
-- URL编解码
-- JSON格式化
-- 二维码生成
-
-#### 颜色选择器
-- 可视化颜色选择
-- 多种颜色格式转换
-- 配色方案生成
-- 渐变生成器
-
-## 🎨 设计规范
-
-### CSS命名规范
-- 采用BEM (Block Element Modifier) 命名规范
-- 统一使用class选择器，避免使用id选择器
-- 样式文件按功能模块分离
-
-### JavaScript规范
-- 使用ES6+语法特性
-- 采用模块化设计
-- 统一使用const/let，避免使用var
-- 所有函数开启严格模式
-
-### 响应式设计
-- 支持桌面端和移动端
-- 使用CSS Grid和Flexbox布局
-- 断点设置: 768px, 480px
-
-## 🔧 开发指南
-
-### 添加新工具
-
-1. 在`js/tools/`目录下创建新的工具文件
-2. 实现工具类，包含`render()`和`init()`方法
-3. 在`app.js`中的`registerTools()`方法中注册工具
-4. 添加对应的CSS样式
-
-### 工具类模板
-
-```javascript
-'use strict';
-
-class YourTool {
-  constructor() {
-    // 初始化属性
-  }
-
-  render() {
-    // 返回HTML字符串
-    return `<div class="your-tool">...</div>`;
-  }
-
-  init() {
-    // 初始化事件监听
-  }
-}
-
-// 注册工具
-if (typeof window !== 'undefined' && window.ToolRegistry) {
-  window.ToolRegistry.register({
-    id: 'your-tool',
-    name: '你的工具',
-    description: '工具描述',
-    category: 'category',
-    icon: 'icon-name',
-    component: YourTool
-  });
-}
-```
-
-## 📱 浏览器兼容性
-
-- ✅ Chrome 60+
-- ✅ Firefox 55+
-- ✅ Safari 12+
-- ✅ Edge 79+
-
-## 🤝 贡献指南
-
-1. Fork 项目
-2. 创建功能分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 开启 Pull Request
-
-## 📄 许可证
-
-本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情
-
-## 🙏 致谢
-
-感谢所有为这个项目做出贡献的开发者！
-
----
-
-**WebTools Hub** - 让工具使用更简单！
+- 遵循项目的编码规范
+- 使用语义化 HTML 标签
+- CSS 采用 BEM 命名规范
+- JavaScript 使用严格模式
+- 组件化开发模式

@@ -4,11 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>H5工具集平台 - WebTools Hub</title>
-  <link rel="stylesheet" href="css/common.css">
-  <link rel="stylesheet" href="css/layout.css">
-  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="../css/common.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
 </head>
-<body>
+<body class="layout">
   <!-- 顶部导航栏 -->
   <header class="header">
     <div class="header__container">
@@ -31,7 +31,7 @@
     <div class="search-section__container">
       <div class="search-bar">
         <input type="text" class="search-bar__input" placeholder="搜索工具..." id="searchInput">
-        <button class="search-bar__btn" id="searchBtn">
+        <button class="search-bar__btn" id="searchBtn" title="搜索工具" aria-label="搜索工具">
           <svg class="search-bar__icon" viewBox="0 0 24 24">
             <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
           </svg>
@@ -56,7 +56,7 @@
       </div>
       
       <!-- 空状态提示 -->
-      <div class="empty-state" id="emptyState" style="display: none;">
+      <div class="empty-state empty-state--hidden" id="emptyState">
         <div class="empty-state__icon">
           <svg viewBox="0 0 24 24">
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
@@ -74,7 +74,7 @@
     <div class="modal__content">
       <div class="modal__header">
         <h2 class="modal__title" id="modalTitle">工具名称</h2>
-        <button class="modal__close" id="modalClose">
+        <button class="modal__close" id="modalClose" title="关闭弹窗" aria-label="关闭弹窗">
           <svg viewBox="0 0 24 24">
             <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
           </svg>
@@ -87,7 +87,7 @@
   </div>
 
   <!-- 加载提示 -->
-  <div class="loading" id="loading" style="display: none;">
+  <div class="loading loading--hidden" id="loading">
     <div class="loading__spinner"></div>
     <p class="loading__text">加载中...</p>
   </div>
@@ -105,13 +105,14 @@
   </footer>
 
   <!-- JavaScript文件 -->
-  <script src="js/utils.js"></script>
-  <script src="js/components/tool-card.js"></script>
-  <script src="js/components/search-bar.js"></script>
-  <script src="js/tools/string-splitter.js"></script>
-  <script src="js/tools/time-display.js"></script>
-  <script src="js/tools/encoder.js"></script>
-  <script src="js/tools/color-picker.js"></script>
-  <script src="js/app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/components/tool-card.js"></script>
+  <script src="../js/components/search-bar.js"></script>
+  <script src="../js/tools/string-splitter.js"></script>
+  <script src="../js/tools/time-display.js"></script>
+  <script src="../js/tools/encoder.js"></script>
+  <script src="../js/tools/color-picker.js"></script>
+  <script src="../js/app.js"></script>
 </body>
 </html>

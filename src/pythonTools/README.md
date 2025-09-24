@@ -1,95 +1,103 @@
-# Python 工具示例代码
+# 🐍 Python 工具模块 (PythonTools)
 
-这个目录包含了各种 Python 编程示例和工具代码，适合学习和参考。
+## 🔹 模块简介
 
-## 📁 文件说明
+Python 数据处理和网络爬虫工具集合，提供股票数据分析和新闻爬取功能。
 
-### 核心示例文件
-- **`pythonTest.py`** - Python 基础示例代码
-  - 基础操作（列表、字典、字符串）
-  - 文件操作（JSON、CSV）
-  - 数据处理和统计
-  - 错误处理
-  - 装饰器使用
-  - 生成器示例
-  - 类继承示例
+## 🔹 功能特性
 
-- **`dataAnalysis.py`** - 数据分析示例
-  - 股票数据加载和处理
-  - 基础统计分析
-  - 趋势分析
-  - 数据导出功能
-  - 模拟数据生成
+- **股票数据分析**：获取和分析股票数据
+- **网络爬虫**：爬取新闻和股票信息
+- **数据导出**：支持 JSON 和 CSV 格式导出
+- **数据处理**：数据清洗和格式化
 
-- **`webScraping.py`** - 网络爬虫示例
-  - 网页内容抓取
-  - 数据解析和提取
-  - 速率限制处理
-  - 数据保存（JSON、CSV）
-  - API 客户端示例
+## 🔹 目录结构
 
-### 配置文件
-- **`requirements.txt`** - Python 依赖包列表
-- **`README.md`** - 本说明文件
+```
+pythonTools/
+├── docs/                    # 文档目录
+│   ├── technical.md        # 技术文档
+│   └── qa.md              # 对话记录
+├── data/                   # 数据目录
+│   ├── input/             # 输入数据
+│   ├── output/            # 输出数据
+│   │   ├── scraped_news.json
+│   │   ├── scraped_stocks.json
+│   │   └── stock_data.json
+│   └── export/            # 导出数据
+│       ├── scraped_news.csv
+│       ├── scraped_stocks.csv
+│       └── stock_data.csv
+├── css/                    # 样式目录
+├── js/                     # JavaScript 逻辑目录
+├── ui/                     # UI 界面目录
+│   └── assets/            # 静态资源
+│       └── images/        # 图片资源
+├── backend/                # 后端代码
+│   ├── dataAnalysis.py    # 数据分析脚本
+│   ├── pythonTest.py      # 测试脚本
+│   ├── webScraping.py     # 网络爬虫脚本
+│   └── requirements.txt   # Python 依赖
+└── README.md              # 模块说明文档
+```
 
-## 🚀 快速开始
+## 🔹 使用方法
 
-### 1. 安装依赖
+### 环境准备
 ```bash
+cd backend
 pip install -r requirements.txt
 ```
 
-### 2. 运行示例代码
+### 运行脚本
 ```bash
-# 运行基础示例
-python pythonTest.py
-
-# 运行数据分析示例
+# 运行数据分析
 python dataAnalysis.py
 
-# 运行爬虫示例
+# 运行网络爬虫
 python webScraping.py
+
+# 运行测试
+python pythonTest.py
 ```
 
-## 📚 学习要点
+## 🔹 功能说明
 
-### Python 基础
-- 数据类型和操作
-- 控制流程
-- 函数定义和调用
-- 类和对象
-- 异常处理
-
-### 数据处理
-- 文件读写操作
-- 数据清洗和转换
-- 统计分析
+### 数据分析 (dataAnalysis.py)
+- 分析股票数据
+- 生成统计报告
 - 数据可视化
 
-### 网络编程
-- HTTP 请求处理
-- 网页内容解析
-- 数据抓取技巧
-- API 接口调用
+### 网络爬虫 (webScraping.py)
+- 爬取股票新闻
+- 获取股票数据
+- 数据清洗和存储
 
-## 🔧 使用技巧
+### 测试脚本 (pythonTest.py)
+- 功能测试
+- 数据验证
+- 性能测试
 
-1. **代码注释**：所有代码都有详细的中文注释
-2. **错误处理**：包含完整的异常处理机制
-3. **模块化设计**：代码结构清晰，易于理解和扩展
-4. **实用示例**：所有示例都基于实际应用场景
+## 🔹 数据格式
 
-## 📝 注意事项
+### 输入数据
+- 股票代码列表
+- 配置参数
 
-- 所有代码都使用 Python 3.7+ 语法
+### 输出数据
+- JSON 格式：结构化数据
+- CSV 格式：表格数据
+
+## 🔹 技术栈
+
+- Python 3.x
+- 网络爬虫库（requests, BeautifulSoup）
+- 数据处理库（pandas, numpy）
+- 数据可视化库（matplotlib, seaborn）
+
+## 🔹 开发规范
+
 - 遵循 PEP 8 编码规范
-- 包含完整的类型提示
-- 支持中文编码（UTF-8）
-
-## 🤝 贡献
-
-欢迎提交 Issue 和 Pull Request 来改进这些示例代码！
-
-## 📄 许可证
-
-本项目采用 MIT 许可证。
+- 使用类型注解
+- 完善的错误处理
+- 详细的日志记录

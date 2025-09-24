@@ -748,6 +748,14 @@ class EncoderTool {
   }
 }
 
+// 导出到全局作用域
+if (typeof window !== 'undefined') {
+  window.EncoderTool = EncoderTool;
+  console.log('✅ EncoderTool 已导出到全局作用域');
+} else {
+  console.warn('⚠️ window 对象不可用，无法导出 EncoderTool');
+}
+
 // 注册工具
 if (typeof window !== 'undefined' && window.ToolRegistry) {
   window.ToolRegistry.register({
