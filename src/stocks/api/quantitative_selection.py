@@ -99,6 +99,25 @@ class QuantitativeSelectionAPI:
                 'data': []
             }
     
+    def get_all_a_stock_codes(self) -> List[str]:
+        """
+        获取所有A股股票代码列表
+        :return: 股票代码列表
+        """
+        try:
+            df = self.data_manager.get_stock_list('A股')
+            if df.empty:
+                print("❌ [API] 无法获取A股股票列表")
+                return []
+            
+            stock_codes = df['code'].tolist()
+            print(f"✅ [API] 成功获取 {len(stock_codes)} 只A股股票代码")
+            return stock_codes
+            
+        except Exception as e:
+            print(f"❌ [API] 获取A股股票代码失败: {e}")
+            return []
+    
     def analyze_single_stock(self, stock_code: str, start_date: str = None, 
                            end_date: str = None) -> Dict:
         """
@@ -206,102 +225,115 @@ class QuantitativeSelectionAPI:
             }
     
     def batch_select_stocks(self, stock_codes: List[str], start_date: str = None, 
-                          end_date: str = None, min_score: float = 0.5) -> Dict:
+                          end_date: str = None, min_score: float = 0.5, 
+                          max_stocks: int = None, request_interval: float = 0.2) -> Dict:
         """
         批量选股
         :param stock_codes: 股票代码列表
         :param start_date: 开始日期
         :param end_date: 结束日期
         :param min_score: 最低评分阈值
+        :param max_stocks: 最大分析股票数量（None表示分析所有）
+        :param request_interval: 请求间隔（秒）
         :return: API响应
         """
         try:
+            # 如果设置了最大股票数量，则限制分析数量
+            if max_stocks and max_stocks > 0:
+                stock_codes = stock_codes[:max_stocks]
+            
             print(f"🔍 [API] 开始批量选股分析")
             print(f"📊 [API] 参数: 股票数量={len(stock_codes)}, 开始日期={start_date}, 结束日期={end_date}, 最低评分={min_score}")
             print(f"📋 [API] 股票代码列表: {stock_codes[:10]}...")
             
-            # 模拟选股结果（简化版本）
             results = []
             total_analyzed = len(stock_codes)
             selected_count = 0
+            failed_count = 0
             
-            print(f"🚀 [API] 开始分析前10只股票...")
+            print(f"🚀 [API] 开始分析 {len(stock_codes)} 只股票...")
             
-            for i, stock_code in enumerate(stock_codes[:10]):  # 只分析前10只股票
+            for i, stock_code in enumerate(stock_codes):
                 try:
-                    print(f"📈 [API] 分析进度: {i+1}/{min(10, len(stock_codes))} - {stock_code}")
+                    # 显示进度（每10只股票显示一次，或者最后一只）
+                    if (i + 1) % 10 == 0 or (i + 1) == len(stock_codes):
+                        print(f"📈 [API] 分析进度: {i+1}/{len(stock_codes)} - {stock_code}")
                     
-                    # 创建模拟股票数据（确保所有值都是JSON可序列化的）
+                    # 使用真实股票数据，添加重试机制
+                    df = self._load_stock_data_with_retry(stock_code, start_date, end_date)
+                    if df.empty:
+                        failed_count += 1
+                        print(f"  ❌ [API] 无法获取数据: {stock_code} (失败次数: {failed_count})")
+                        continue
+                    
+                    # 计算所有技术指标和图形识别
+                    df = self.selector.calculate_all_indicators(df)
+                    
+                    # 获取最新数据
+                    latest_data = df.iloc[-1].copy()
+                    
+                    # 构建分析结果（确保所有值都是JSON可序列化的）
                     stock_data = {
                         'stock_code': stock_code,
                         'analysis_date': datetime.now().isoformat(),
-                        'current_price': float(10.0 + i * 0.5),
-                        'change_pct': float(np.random.uniform(-5, 5)),
-                        'volume': int(np.random.randint(1000000, 10000000)),
+                        'current_price': float(latest_data.get('close', 0)),
+                        'change_pct': float(latest_data.get('change_pct', 0)),
+                        'volume': int(latest_data.get('volume', 0)),
                         'technical_indicators': {
                             'kdj': {
-                                'k': float(np.random.uniform(0, 100)),
-                                'd': float(np.random.uniform(0, 100)),
-                                'j': float(np.random.uniform(0, 100))
+                                'k': float(latest_data.get('k', 0)),
+                                'd': float(latest_data.get('d', 0)),
+                                'j': float(latest_data.get('j', 0))
                             },
                             'ma': {
-                                'ma5': float(10.0 + i * 0.5),
-                                'ma20': float(10.0 + i * 0.5),
-                                'ma60': float(10.0 + i * 0.5)
+                                'ma5': float(latest_data.get('ma5', 0)),
+                                'ma20': float(latest_data.get('ma20', 0)),
+                                'ma60': float(latest_data.get('ma60', 0))
                             },
                             'macd': {
-                                'macd': float(np.random.uniform(-1, 1)),
-                                'signal': float(np.random.uniform(-1, 1)),
-                                'histogram': float(np.random.uniform(-1, 1))
+                                'macd': float(latest_data.get('macd', 0)),
+                                'signal': float(latest_data.get('macd_signal', 0)),
+                                'histogram': float(latest_data.get('macd_histogram', 0))
                             },
-                            'rsi': float(np.random.uniform(0, 100)),
+                            'rsi': float(latest_data.get('rsi', 0)),
                             'bollinger_bands': {
-                                'upper': float(10.0 + i * 0.5 + 1),
-                                'middle': float(10.0 + i * 0.5),
-                                'lower': float(10.0 + i * 0.5 - 1),
-                                'position': float(np.random.uniform(0, 1))
+                                'upper': float(latest_data.get('bb_upper', 0)),
+                                'middle': float(latest_data.get('bb_middle', 0)),
+                                'lower': float(latest_data.get('bb_lower', 0)),
+                                'position': float(latest_data.get('bb_position', 0))
                             }
                         },
                         'pattern_signals': {
-                            'n_pattern': bool(np.random.choice([True, False])),
-                            'volume_contraction': bool(np.random.choice([True, False])),
-                            'fake_yin_real_yang': bool(np.random.choice([True, False])),
-                            'green_hat': bool(np.random.choice([True, False])),
-                            'zhixing_trend': bool(np.random.choice([True, False])),
-                            'abnormal_limit_up': bool(np.random.choice([True, False]))
+                            'n_pattern': bool(latest_data.get('n_pattern', 0)),
+                            'volume_contraction': bool(latest_data.get('volume_contraction', 0)),
+                            'fake_yin_real_yang': bool(latest_data.get('fake_yin_real_yang', 0)),
+                            'green_hat': bool(latest_data.get('green_hat', 0)),
+                            'zhixing_trend': bool(latest_data.get('zhixing_trend', 0)),
+                            'abnormal_limit_up': bool(latest_data.get('abnormal_limit_up', 0))
                         },
                         'advanced_patterns': {
-                            'cup_handle': bool(np.random.choice([True, False])),
-                            'double_bottom': bool(np.random.choice([True, False])),
-                            'triangle': bool(np.random.choice([True, False])),
-                            'head_shoulders': bool(np.random.choice([True, False])),
-                            'breakout': bool(np.random.choice([True, False])),
-                            'golden_cross': bool(np.random.choice([True, False]))
+                            'cup_handle': bool(latest_data.get('cup_handle', 0)),
+                            'double_bottom': bool(latest_data.get('double_bottom', 0)),
+                            'triangle': bool(latest_data.get('triangle', 0)),
+                            'head_shoulders': bool(latest_data.get('head_shoulders', 0)),
+                            'breakout': bool(latest_data.get('breakout', 0)),
+                            'golden_cross': bool(latest_data.get('golden_cross', 0))
                         },
                         'scores': {
-                            'pattern_score': float(np.random.uniform(0, 1)),
-                            'advanced_pattern_score': float(np.random.uniform(0, 1)),
-                            'combined_score': float(np.random.uniform(0, 1))
+                            'pattern_score': float(latest_data.get('pattern_score', 0)),
+                            'advanced_pattern_score': float(latest_data.get('advanced_pattern_score', 0)),
+                            'combined_score': float(latest_data.get('pattern_score', 0))  # 使用真实评分
                         },
-                        'selection_criteria': {
-                            'n_pattern': bool(np.random.choice([True, False])),
-                            'trend_up': bool(np.random.choice([True, False])),
-                            'kdj_j_less_13': bool(np.random.choice([True, False])),
-                            'volume_contraction': bool(np.random.choice([True, False])),
-                            'top_no_volume': bool(np.random.choice([True, False])),
-                            'zhixing_trend': bool(np.random.choice([True, False])),
-                            'no_abnormal_limit_up': bool(np.random.choice([True, False])),
-                            'pattern_score_ok': bool(np.random.choice([True, False])),
-                            'meets_all_criteria': bool(np.random.choice([True, False])),
-                            'meets_count': int(np.random.randint(0, 8))
-                        }
+                        'selection_criteria': self._check_selection_criteria(latest_data)
                     }
                     
                     print(f"📊 [API] {stock_code} 数据生成完成: 评分={stock_data['scores']['combined_score']:.3f}, 符合条件={stock_data['selection_criteria']['meets_all_criteria']}")
                     
                     # 检查是否满足选股条件
-                    if (stock_data['scores']['combined_score'] >= min_score and 
-                        stock_data['selection_criteria']['meets_all_criteria']):
+                    meets_criteria = stock_data['selection_criteria']['meets_all_criteria']
+                    score_ok = stock_data['scores']['combined_score'] >= min_score
+                    
+                    if score_ok and meets_criteria:
                         selected_count += 1
                         results.append(stock_data)
                         print(f"  ✅ [API] 符合条件: {stock_code} (评分: {stock_data['scores']['combined_score']:.3f})")
@@ -309,10 +341,11 @@ class QuantitativeSelectionAPI:
                         print(f"  ❌ [API] 不符合条件: {stock_code} (评分: {stock_data['scores']['combined_score']:.3f})")
                     
                     # 避免请求过于频繁
-                    time.sleep(0.1)
+                    time.sleep(request_interval)
                     
                 except Exception as e:
-                    print(f"  ❌ [API] 分析失败: {stock_code} - {e}")
+                    failed_count += 1
+                    print(f"  ❌ [API] 分析失败: {stock_code} - {e} (失败次数: {failed_count})")
                     continue
             
             print(f"📊 [API] 分析完成，开始生成报告...")
@@ -323,9 +356,11 @@ class QuantitativeSelectionAPI:
             # 生成统计报告
             report = {
                 'total_stocks': len(stock_codes),
-                'analyzed_stocks': total_analyzed,
+                'analyzed_stocks': total_analyzed - failed_count,
+                'failed_stocks': failed_count,
                 'selected_stocks': selected_count,
-                'selection_rate': (selected_count / total_analyzed * 100) if total_analyzed > 0 else 0,
+                'selection_rate': (selected_count / (total_analyzed - failed_count) * 100) if (total_analyzed - failed_count) > 0 else 0,
+                'success_rate': ((total_analyzed - failed_count) / total_analyzed * 100) if total_analyzed > 0 else 0,
                 'avg_score': np.mean([r['scores']['combined_score'] for r in results]) if results else 0,
                 'max_score': max([r['scores']['combined_score'] for r in results]) if results else 0,
                 'min_score': min([r['scores']['combined_score'] for r in results]) if results else 0
@@ -356,6 +391,86 @@ class QuantitativeSelectionAPI:
                     'report': {}
                 }
             }
+    
+    def analyze_all_a_stocks(self, start_date: str = None, end_date: str = None, 
+                            min_score: float = 0.5, max_stocks: int = None, 
+                            request_interval: float = 0.2) -> Dict:
+        """
+        分析所有A股股票
+        :param start_date: 开始日期
+        :param end_date: 结束日期
+        :param min_score: 最低评分阈值
+        :param max_stocks: 最大分析股票数量（None表示分析所有）
+        :param request_interval: 请求间隔（秒）
+        :return: API响应
+        """
+        try:
+            print("🚀 [API] 开始分析所有A股股票...")
+            
+            # 获取所有A股股票代码
+            stock_codes = self.get_all_a_stock_codes()
+            if not stock_codes:
+                return {
+                    'success': False,
+                    'message': '无法获取A股股票列表',
+                    'data': {
+                        'selected_stocks': [],
+                        'report': {}
+                    }
+                }
+            
+            print(f"📊 [API] 共获取到 {len(stock_codes)} 只A股股票")
+            
+            # 调用批量选股方法
+            return self.batch_select_stocks(
+                stock_codes=stock_codes,
+                start_date=start_date,
+                end_date=end_date,
+                min_score=min_score,
+                max_stocks=max_stocks,
+                request_interval=request_interval
+            )
+            
+        except Exception as e:
+            print(f"❌ [API] 分析所有A股股票失败: {str(e)}")
+            return {
+                'success': False,
+                'message': f'分析所有A股股票失败: {str(e)}',
+                'data': {
+                    'selected_stocks': [],
+                    'report': {}
+                }
+            }
+    
+    def _load_stock_data_with_retry(self, stock_code: str, start_date: str = None, 
+                                   end_date: str = None, max_retries: int = 3) -> pd.DataFrame:
+        """
+        带重试机制的股票数据加载
+        :param stock_code: 股票代码
+        :param start_date: 开始日期
+        :param end_date: 结束日期
+        :param max_retries: 最大重试次数
+        :return: 股票数据DataFrame
+        """
+        for attempt in range(max_retries):
+            try:
+                df = self.selector.load_stock_data(stock_code, start_date, end_date)
+                if not df.empty:
+                    return df
+                else:
+                    if attempt < max_retries - 1:
+                        print(f"  ⚠️ [API] 第{attempt + 1}次获取数据为空，{1}秒后重试...")
+                        time.sleep(1)
+                    else:
+                        print(f"  ❌ [API] 重试{max_retries}次后仍无法获取数据: {stock_code}")
+            except Exception as e:
+                if attempt < max_retries - 1:
+                    print(f"  ⚠️ [API] 第{attempt + 1}次获取数据失败: {e}，{1}秒后重试...")
+                    time.sleep(1)
+                else:
+                    print(f"  ❌ [API] 重试{max_retries}次后仍失败: {stock_code} - {e}")
+        
+        return pd.DataFrame()
     
     def _check_selection_criteria(self, stock_data: pd.Series) -> Dict:
         """

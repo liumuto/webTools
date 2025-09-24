@@ -374,8 +374,11 @@ class QuantitativeStockSelector:
             if df.empty:
                 return pd.DataFrame()
             
-            # 重命名列
-            df.columns = ['date', 'open', 'close', 'high', 'low', 'volume', 'turnover', 'amplitude', 'change_pct', 'change_amount', 'turnover_rate']
+            # 重命名列（AKShare返回12列，包含股票代码列）
+            df.columns = ['date', 'stock_code', 'open', 'close', 'high', 'low', 'volume', 'turnover', 'amplitude', 'change_pct', 'change_amount', 'turnover_rate']
+            
+            # 删除股票代码列，因为我们已经知道股票代码
+            df = df.drop('stock_code', axis=1)
             
             # 转换数据类型
             df['date'] = pd.to_datetime(df['date'])

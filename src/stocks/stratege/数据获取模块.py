@@ -44,19 +44,28 @@ class DataManager:
                     if '代码' in df.columns and '名称' in df.columns:
                         df = df[['代码', '名称']].copy()
                         df.columns = ['code', 'name']
-                        print(f"从本地文件获取到 {len(df)} 只股票")
+                        
+                        # 去除股票代码中的市场前缀（sh、sz等），只保留数字部分
+                        df['code'] = df['code'].str.replace(r'^(sh|sz|bj)', '', regex=True)
+                        
+                        print(f"从本地文件获取到 {len(df)} 只A股股票")
                         return df
                 
                 # 如果本地文件不存在或格式不对，尝试从网络获取
                 print("本地文件不存在，尝试从网络获取股票列表...")
-                df = ak.stock_zh_a_spot()
-                # 只保留代码和名称
-                df = df[['代码', '名称']].copy()
-                df.columns = ['code', 'name']
-                
-                # 保存到本地文件
-                df.to_csv(local_file, index=False, encoding='utf-8-sig')
-                print(f"股票列表已保存到本地文件: {local_file}")
+                try:
+                    df = ak.stock_zh_a_spot()
+                    # 只保留代码和名称
+                    df = df[['代码', '名称']].copy()
+                    df.columns = ['code', 'name']
+                    
+                    # 保存到本地文件
+                    df.to_csv(local_file, index=False, encoding='utf-8-sig')
+                    print(f"股票列表已保存到本地文件: {local_file}")
+                except Exception as e:
+                    print(f"从网络获取股票列表失败: {e}")
+                    # 如果网络获取失败，返回空DataFrame
+                    return pd.DataFrame()
             else:
                 raise ValueError(f"不支持的市场类型: {market}")
             
@@ -92,9 +101,12 @@ class DataManager:
             if df.empty:
                 return pd.DataFrame()
             
-            # 标准化列名
-            df.columns = ['date', 'open', 'close', 'high', 'low', 'volume', 
+            # 标准化列名（AKShare返回12列，包含股票代码列）
+            df.columns = ['date', 'stock_code', 'open', 'close', 'high', 'low', 'volume', 
                          'turnover', 'amplitude', 'change_pct', 'change_amount', 'turnover_rate']
+            
+            # 删除股票代码列，因为我们已经知道股票代码
+            df = df.drop('stock_code', axis=1)
             
             # 数据类型转换
             df['date'] = pd.to_datetime(df['date'])

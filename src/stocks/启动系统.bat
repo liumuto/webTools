@@ -15,6 +15,6 @@ if errorlevel 1 (
 
 echo.
 echo 启动后端服务...
-python quick_start.py
+python start.py
 
 pause

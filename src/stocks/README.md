@@ -1,6 +1,6 @@
-# 📊 量化选股系统
+# 量化选股系统
 
-基于技术指标和图形识别的智能选股系统，提供专业的股票分析和投资建议。
+一个基于Python的量化选股系统，提供股票分析、选股策略和Web API服务；基于技术指标和图形识别的智能选股系统，提供专业的股票分析和投资建议。
 
 ## 🌟 功能特色
 
@@ -24,188 +24,205 @@
 
 ## 🚀 快速开始
 
-### 环境要求
-- Python 3.8+
-- 依赖包：见 `stratege/requirements.txt`
-
-### 安装依赖
+### 1. 安装依赖
 ```bash
-cd src/stocks
-pip install -r stratege/requirements.txt
+pip install flask flask-cors pandas numpy akshare
 ```
 
-### 启动系统
+### 2. 启动系统
 ```bash
-python start_quantitative.py
+# 开发模式
+python start.py
+
+# 生产模式
+python start.py prod
 ```
 
-### 访问界面
-- 后端API：http://localhost:5000
-- 前端界面：打开 `ui/myStock.html`
+### 3. 访问系统
+- 后端API: http://localhost:5000
+- 前端界面: 打开 `ui/myStock.html`
+
+## 📋 功能特性
+
+### 核心功能
+- ✅ 股票数据获取（基于AKShare）
+- ✅ 量化选股策略
+- ✅ 技术指标分析
+- ✅ 批量股票分析
+- ✅ Web API服务
+- ✅ 前端界面
+
+### 选股策略
+- 移动平均线策略
+- RSI相对强弱指标
+- MACD指标
+- 布林带策略
+- 成交量分析
+- 综合评分系统
+
+### API接口
+- `GET /api/stocks/list` - 获取股票列表
+- `GET /api/stocks/analyze/<code>` - 分析单只股票
+- `POST /api/stocks/select` - 批量选股
+- `GET /api/stocks/strategies` - 获取选股策略
+- `GET /api/stocks/health` - 健康检查
 
 ## 📁 项目结构
 
 ```
 src/stocks/
-├── api/                    # API接口
+├── api/                    # API模块
 │   ├── quantitative_selection.py  # 量化选股API
-│   └── routes.py                 # 路由定义
+│   └── routes.py          # 路由定义
 ├── stratege/              # 策略模块
-│   ├── 量化选股策略.py      # 核心选股策略
-│   ├── 图形识别增强.py      # 高级图形识别
-│   ├── 数据获取模块.py      # 数据管理
-│   ├── stock_code_names.csv      # 股票代码列表
-│   └── requirements.txt          # 依赖包
+│   ├── 量化选股策略.py     # 核心选股策略
+│   ├── 数据获取模块.py     # 数据获取模块
+│   └── stock_code_names.csv # 股票代码列表
 ├── ui/                    # 前端界面
 │   ├── myStock.html       # 主界面
-│   └── assets/            # 静态资源
+│   └── tatashishiStock.html # 实时行情
 ├── css/                   # 样式文件
-│   └── main.css          # 主样式
-├── js/                    # JavaScript
-│   └── quantitative.js   # 量化选股逻辑
+├── js/                    # JavaScript文件
+├── data/                  # 数据目录
+│   ├── input/            # 输入数据
+│   ├── output/           # 输出结果
+│   └── export/           # 导出文件
 ├── docs/                  # 文档
-│   ├── prd.md            # 产品需求文档
-│   └── qa.md             # QA记录
+├── start.py              # 统一启动脚本
 ├── app.py                # Flask应用
-└── start_quantitative.py # 启动脚本
+└── README.md             # 说明文档
 ```
 
-## 🔧 API接口
+## 🔧 配置说明
 
-### 获取股票列表
-```http
-GET /api/stocks/list?market=A股
+### 环境要求
+- Python 3.7+
+- 网络连接（用于获取股票数据）
+
+### 依赖包
+- **必需**: flask, flask-cors, pandas, numpy, akshare
+- **可选**: talib, scipy, scikit-learn, matplotlib, seaborn
+
+### 配置参数
+- `max_stocks`: 最大分析股票数量（None表示分析所有）
+- `request_interval`: 请求间隔（秒）
+- `min_score`: 最低评分阈值
+
+## 📊 使用示例
+
+### Python API使用
+```python
+from api.quantitative_selection import QuantitativeSelectionAPI
+
+# 创建API实例
+api = QuantitativeSelectionAPI()
+
+# 分析单只股票
+result = api.analyze_stock('000001', '20240101', '20241201')
+
+# 批量选股
+result = api.batch_select_stocks(
+    stock_codes=['000001', '000002', '600000'],
+    min_score=0.5
+)
+
+# 分析所有A股股票
+result = api.analyze_all_a_stocks(
+    start_date='20240101',
+    end_date='20241201',
+    min_score=0.5,
+    max_stocks=100  # 限制分析数量
+)
 ```
 
-### 分析单只股票
-```http
-GET /api/stocks/analyze/000001?start_date=20240101&end_date=20241201
+### HTTP API使用
+```bash
+# 获取股票列表
+curl http://localhost:5000/api/stocks/list
+
+# 分析单只股票
+curl http://localhost:5000/api/stocks/analyze/000001
+
+# 批量选股
+curl -X POST http://localhost:5000/api/stocks/select \
+  -H "Content-Type: application/json" \
+  -d '{"stock_codes":["000001","000002"],"min_score":0.5}'
 ```
 
-### 批量选股
-```http
-POST /api/stocks/select
-Content-Type: application/json
+## 🛠️ 开发说明
 
-{
-    "stock_codes": ["000001", "000002", "000003"],
-    "start_date": "20240101",
-    "end_date": "20241201",
-    "min_score": 0.5
-}
+### 启动开发环境
+```bash
+python start.py dev
 ```
 
-### 获取选股策略
-```http
-GET /api/stocks/strategies
+### 启动生产环境
+```bash
+python start.py prod
 ```
 
-### 健康检查
-```http
-GET /api/stocks/health
+### 更新股票列表
+```bash
+python update_stock_list.py
 ```
 
-## 📊 使用说明
+## 📈 性能优化
 
-### 1. 配置选股策略
-- 选择基础策略（N型趋势、KDJ信号等）
-- 选择高级策略（杯柄形态、双底形态等）
-- 设置最低评分阈值
+### 数据获取优化
+- 添加重试机制（最多3次）
+- 请求间隔控制（避免频率限制）
+- 错误处理和日志记录
 
-### 2. 运行选股
-- 点击"运行策略"按钮
-- 系统自动分析股票池
-- 显示符合条件的股票
+### 内存优化
+- 分批处理大量股票
+- 及时释放不需要的数据
+- 使用生成器处理大数据集
 
-### 3. 查看结果
-- 股票列表按评分排序
-- 显示技术指标和图形信号
-- 支持详细分析查看
+## 🔍 故障排除
 
-### 4. 导出数据
-- 支持CSV格式导出
-- 包含完整的分析结果
+### 常见问题
+1. **数据获取失败**: 检查网络连接和AKShare服务状态
+2. **依赖包缺失**: 运行 `pip install -r requirements.txt`
+3. **端口占用**: 修改端口号或停止占用进程
+4. **内存不足**: 减少 `max_stocks` 参数值
 
-## 🎯 选股逻辑
+### 日志查看
+- 开发模式: 控制台输出
+- 生产模式: Gunicorn日志
 
-### 基础条件（必须全部满足）
-1. **N型上涨趋势** - 价格走势呈现N型上涨
-2. **趋势向上** - 短期均线在长期均线之上
-3. **KDJ超卖** - J值小于13，处于超卖状态
-4. **缩量回调** - 成交量明显萎缩
-5. **顶部无量** - 假阴真阳或大绿帽形态
-6. **知行趋势线** - 均线金叉且带量突破
-7. **无异常涨停** - 排除异常涨停股票
-8. **图形评分** - 综合评分大于0.5
+## 📝 更新日志
 
-### 高级图形（加分项）
-- 杯柄形态、双底形态、三角形整理
-- 头肩底形态、突破形态、金叉形态
+### v2.0.0 (2024-12-01)
+- ✅ 修复数据获取问题
+- ✅ 支持分析所有A股股票
+- ✅ 优化API接口
+- ✅ 改进错误处理
+- ✅ 统一启动脚本
 
-## 📈 评分系统
-
-### 基础评分（60%权重）
-- N型上涨趋势：25%
-- 缩量回调：15%
-- 假阴真阳：15%
-- 知行趋势线：20%
-- KDJ信号：15%
-- 趋势向上：10%
-
-### 高级评分（40%权重）
-- 杯柄形态：20%
-- 双底形态：18%
-- 三角形整理：15%
-- 头肩底形态：17%
-- 突破形态：15%
-- 金叉形态：15%
-
-## 🔍 技术指标
-
-### 趋势指标
-- MA5、MA20、MA60 - 移动平均线
-- MACD - 指数平滑移动平均线
-- 布林带 - 价格通道指标
-
-### 震荡指标
-- KDJ - 随机指标
-- RSI - 相对强弱指标
-
-### 成交量指标
-- 成交量移动平均线
-- 量价关系分析
-
-## ⚠️ 风险提示
-
-1. **投资有风险** - 本系统仅供学习研究使用
-2. **历史表现不代表未来** - 过去的表现不能保证未来的结果
-3. **需要结合基本面** - 技术分析应结合基本面分析
-4. **风险控制重要** - 建议设置止损和仓位控制
+### v1.0.0 (2024-11-01)
+- ✅ 基础量化选股功能
+- ✅ Web API服务
+- ✅ 前端界面
 
 ## 🤝 贡献指南
-
-欢迎提交Issue和Pull Request来改进系统：
 
 1. Fork 项目
 2. 创建功能分支
 3. 提交更改
 4. 推送到分支
-5. 创建Pull Request
+5. 创建 Pull Request
 
 ## 📄 许可证
 
-本项目采用MIT许可证，详见LICENSE文件。
+本项目采用 MIT 许可证。
 
 ## 📞 联系方式
 
-- 项目地址：https://github.com/your-repo/quantitative-stock-selection
-- 问题反馈：https://github.com/your-repo/quantitative-stock-selection/issues
+如有问题或建议，请通过以下方式联系：
+- 提交 Issue
+- 发送邮件
+- 微信群交流
 
-## 🙏 致谢
+---
 
-感谢以下开源项目的支持：
-- [AKShare](https://github.com/akfamily/akshare) - 数据源
-- [Flask](https://flask.palletsprojects.com/) - Web框架
-- [Pandas](https://pandas.pydata.org/) - 数据处理
-- [NumPy](https://numpy.org/) - 数值计算
-- [TA-Lib](https://ta-lib.org/) - 技术分析库
+**注意**: 本系统仅供学习和研究使用，不构成投资建议。投资有风险，入市需谨慎。
