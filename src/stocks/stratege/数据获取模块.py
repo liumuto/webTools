@@ -22,11 +22,57 @@ class DataManager:
         self.data_path = data_path
         self.ensure_data_path()
         
+        # 定义各板块的股票代码前缀规则
+        self.market_rules = {
+            '沪市主板': ['600', '601', '603', '605'],
+            '深市主板': ['000', '001', '002', '003', '004'],
+            '创业板': ['300', '301'],
+            '科创板': ['688'],
+            '北交所': ['8']  # 包括82、83、87、88等
+        }
+        
     def ensure_data_path(self):
         """确保数据目录存在"""
         if not os.path.exists(self.data_path):
             os.makedirs(self.data_path)
             print(f"创建数据目录: {self.data_path}")
+    
+    def get_stock_market(self, stock_code: str) -> str:
+        """
+        根据股票代码判断所属板块
+        :param stock_code: 股票代码
+        :return: 板块名称
+        """
+        if not stock_code or len(stock_code) < 3:
+            return '未知'
+        
+        # 确保股票代码是字符串格式
+        code_str = str(stock_code).zfill(6)  # 补齐到6位
+        
+        for market, prefixes in self.market_rules.items():
+            for prefix in prefixes:
+                if code_str.startswith(prefix):
+                    return market
+        
+        return '未知'
+    
+    def filter_stocks_by_market(self, df: pd.DataFrame, markets: List[str]) -> pd.DataFrame:
+        """
+        根据板块筛选股票
+        :param df: 股票列表DataFrame
+        :param markets: 要筛选的板块列表
+        :return: 筛选后的DataFrame
+        """
+        if df.empty or not markets:
+            return df
+        
+        # 添加板块列
+        df['market'] = df['code'].apply(self.get_stock_market)
+        
+        # 筛选指定板块
+        filtered_df = df[df['market'].isin(markets)].copy()
+        
+        return filtered_df
     
     def get_stock_list(self, market: str = 'A股') -> pd.DataFrame:
         """

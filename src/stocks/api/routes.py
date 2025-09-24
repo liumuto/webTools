@@ -16,12 +16,15 @@ stocks_bp = Blueprint('stocks', __name__, url_prefix='/api/stocks')
 def get_stock_list():
     """
     获取股票列表
-    GET /api/stocks/list?market=A股
+    GET /api/stocks/list?market=A股&markets=沪市主板,创业板
     """
     try:
         market = request.args.get('market', 'A股')
+        markets_str = request.args.get('markets', '')
+        markets = [m.strip() for m in markets_str.split(',')] if markets_str else None
+        
         api = get_api()
-        result = api.get_stock_list(market)
+        result = api.get_stock_list(market, markets)
         return jsonify(result)
     except Exception as e:
         return jsonify({
@@ -88,8 +91,9 @@ def select_stocks():
         start_date = data.get('start_date')
         end_date = data.get('end_date')
         min_score = data.get('min_score', 0.5)
+        markets = data.get('markets', [])
         
-        print(f"🌐 [ROUTE] 提取参数: 股票数量={len(stock_codes)}, 开始日期={start_date}, 结束日期={end_date}, 最低评分={min_score}")
+        print(f"🌐 [ROUTE] 提取参数: 股票数量={len(stock_codes)}, 开始日期={start_date}, 结束日期={end_date}, 最低评分={min_score}, 板块={markets}")
         
         if not stock_codes:
             print(f"❌ [ROUTE] 错误: 股票代码列表为空")
@@ -101,7 +105,7 @@ def select_stocks():
         
         print(f"🌐 [ROUTE] 调用API进行批量选股...")
         api = get_api()
-        result = api.batch_select_stocks(stock_codes, start_date, end_date, min_score)
+        result = api.batch_select_stocks(stock_codes, start_date, end_date, min_score, markets=markets)
         
         print(f"🌐 [ROUTE] API返回结果: 成功={result.get('success', False)}, 消息={result.get('message', '')}")
         print(f"🌐 [ROUTE] 返回响应给前端")
@@ -119,6 +123,23 @@ def select_stocks():
                 'selected_stocks': [],
                 'report': {}
             }
+        }), 500
+
+@stocks_bp.route('/markets', methods=['GET'])
+def get_markets():
+    """
+    获取板块信息
+    GET /api/stocks/markets
+    """
+    try:
+        api = get_api()
+        result = api.get_market_info()
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'获取板块信息失败: {str(e)}',
+            'data': {}
         }), 500
 
 @stocks_bp.route('/strategies', methods=['GET'])

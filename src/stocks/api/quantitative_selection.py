@@ -61,10 +61,11 @@ class QuantitativeSelectionAPI:
         self.advanced_pattern = AdvancedPatternRecognition()
         self.pattern_scorer = PatternScorer()
         
-    def get_stock_list(self, market: str = 'A股') -> Dict:
+    def get_stock_list(self, market: str = 'A股', markets: List[str] = None) -> Dict:
         """
         获取股票列表
         :param market: 市场类型
+        :param markets: 要筛选的板块列表
         :return: API响应
         """
         try:
@@ -77,13 +78,22 @@ class QuantitativeSelectionAPI:
                     'data': []
                 }
             
+            # 如果指定了板块筛选，则进行筛选
+            if markets and len(markets) > 0:
+                df = self.data_manager.filter_stocks_by_market(df, markets)
+                print(f"📊 [API] 按板块筛选: {markets}, 筛选后股票数量: {len(df)}")
+            
             # 转换为前端需要的格式
             stock_list = []
             for _, row in df.iterrows():
-                stock_list.append({
+                stock_info = {
                     'code': row['code'],
                     'name': row['name']
-                })
+                }
+                # 如果包含板块信息，则添加
+                if 'market' in row:
+                    stock_info['market'] = row['market']
+                stock_list.append(stock_info)
             
             return {
                 'success': True,
@@ -226,7 +236,8 @@ class QuantitativeSelectionAPI:
     
     def batch_select_stocks(self, stock_codes: List[str], start_date: str = None, 
                           end_date: str = None, min_score: float = 0.5, 
-                          max_stocks: int = None, request_interval: float = 0.2) -> Dict:
+                          max_stocks: int = None, request_interval: float = 0.2,
+                          markets: List[str] = None) -> Dict:
         """
         批量选股
         :param stock_codes: 股票代码列表
@@ -235,9 +246,25 @@ class QuantitativeSelectionAPI:
         :param min_score: 最低评分阈值
         :param max_stocks: 最大分析股票数量（None表示分析所有）
         :param request_interval: 请求间隔（秒）
+        :param markets: 要筛选的板块列表
         :return: API响应
         """
         try:
+            # 如果指定了板块筛选，则先筛选股票代码
+            if markets and len(markets) > 0:
+                print(f"🔍 [API] 按板块筛选股票: {markets}")
+                # 获取所有股票列表
+                all_stocks_df = self.data_manager.get_stock_list('A股')
+                if not all_stocks_df.empty:
+                    # 按板块筛选
+                    filtered_df = self.data_manager.filter_stocks_by_market(all_stocks_df, markets)
+                    # 只保留在筛选结果中的股票代码
+                    filtered_codes = set(filtered_df['code'].tolist())
+                    stock_codes = [code for code in stock_codes if code in filtered_codes]
+                    print(f"📊 [API] 板块筛选后股票数量: {len(stock_codes)}")
+                else:
+                    print(f"⚠️ [API] 无法获取股票列表进行板块筛选")
+            
             # 如果设置了最大股票数量，则限制分析数量
             if max_stocks and max_stocks > 0:
                 stock_codes = stock_codes[:max_stocks]
@@ -495,6 +522,35 @@ class QuantitativeSelectionAPI:
         criteria['meets_count'] = sum(criteria.values())
         
         return criteria
+    
+    def get_market_info(self) -> Dict:
+        """
+        获取板块信息
+        :return: 板块信息
+        """
+        try:
+            market_info = {
+                'success': True,
+                'message': '获取板块信息成功',
+                'data': {
+                    'markets': list(self.data_manager.market_rules.keys()),
+                    'rules': self.data_manager.market_rules,
+                    'descriptions': {
+                        '沪市主板': '上海证券交易所主板，代码以600、601、603、605开头',
+                        '深市主板': '深圳证券交易所主板，代码以000、001、002、003、004开头',
+                        '创业板': '深圳证券交易所创业板，代码以300、301开头',
+                        '科创板': '上海证券交易所科创板，代码以688开头',
+                        '北交所': '北京证券交易所，代码以8开头（82优先股、83/87普通股、88公开发行）'
+                    }
+                }
+            }
+            return market_info
+        except Exception as e:
+            return {
+                'success': False,
+                'message': f'获取板块信息失败: {str(e)}',
+                'data': {}
+            }
     
     def get_selection_strategies(self) -> Dict:
         """

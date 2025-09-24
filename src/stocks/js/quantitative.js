@@ -9,8 +9,14 @@ class QuantitativeStockSystem {
 
     init() {
         this.bindEvents();
+        this.bindCheckboxEvents();
+        this.bindDateRangeEvents();
+        this.bindPeriodPresetEvents();
         this.loadStockList();
+        this.loadMarketInfo();
         this.updateSliderValues();
+        this.updateCheckboxVisual();
+        this.initializeDateRange();
     }
 
     bindEvents() {
@@ -42,6 +48,9 @@ class QuantitativeStockSystem {
         document.getElementById('sortBy').addEventListener('change', (e) => {
             this.sortStocks(e.target.value);
         });
+
+        // 板块复选框事件处理
+        this.bindCheckboxEvents();
     }
 
     switchTab(tabName) {
@@ -87,6 +96,39 @@ class QuantitativeStockSystem {
             this.showMessage('加载股票列表失败: ' + error.message, 'error');
         }
     }
+    
+    async loadMarketInfo() {
+        try {
+            const response = await fetch(`${this.apiBaseUrl}/markets`);
+            const result = await response.json();
+            
+            if (result.success) {
+                console.log('加载板块信息成功:', result.data);
+                this.updateMarketCheckboxes(result.data);
+            } else {
+                console.warn('加载板块信息失败:', result.message);
+            }
+        } catch (error) {
+            console.error('加载板块信息失败:', error);
+        }
+    }
+    
+    updateMarketCheckboxes(marketData) {
+        // 更新板块复选框的显示
+        const marketCheckboxes = document.querySelectorAll('input[id^="market_"]');
+        marketCheckboxes.forEach(checkbox => {
+            const marketName = checkbox.id.replace('market_', '');
+            if (marketData.markets && marketData.markets.includes(marketName)) {
+                // 板块存在，保持当前状态
+                console.log(`板块 ${marketName} 可用`);
+            } else {
+                // 板块不存在，禁用复选框
+                checkbox.disabled = true;
+                checkbox.parentElement.style.opacity = '0.5';
+                console.log(`板块 ${marketName} 不可用，已禁用`);
+            }
+        });
+    }
 
     async runQuantitativeStrategy() {
         console.log('🚀 开始运行量化选股策略...');
@@ -118,7 +160,8 @@ class QuantitativeStockSystem {
                 stock_codes: stockCodes,
                 start_date: config.startDate,
                 end_date: config.endDate,
-                min_score: config.minScore
+                min_score: config.minScore,
+                markets: config.markets
             };
             
             console.log('📤 发送请求到:', `${this.apiBaseUrl}/select`);
@@ -173,33 +216,220 @@ class QuantitativeStockSystem {
     }
 
     getStrategyConfig() {
-        const timeRange = document.getElementById('timeRange').value;
+        const startDateInput = document.getElementById('startDate').value;
+        const endDateInput = document.getElementById('endDate').value;
         const minScore = parseFloat(document.getElementById('minScore').value);
         
-        // 计算日期范围
-        const endDate = new Date();
-        const startDate = new Date();
-        
-        switch (timeRange) {
-            case '1y':
-                startDate.setFullYear(endDate.getFullYear() - 1);
-                break;
-            case '2y':
-                startDate.setFullYear(endDate.getFullYear() - 2);
-                break;
-            case '3y':
-                startDate.setFullYear(endDate.getFullYear() - 3);
-                break;
-            case '5y':
-                startDate.setFullYear(endDate.getFullYear() - 5);
-                break;
+        // 验证日期范围输入
+        if (!this.validateDateRange(startDateInput, endDateInput)) {
+            throw new Error('回测日期范围无效，请检查开始日期和结束日期');
         }
         
+        // 获取选中的板块
+        const selectedMarkets = this.getSelectedMarkets();
+        
         return {
-            startDate: this.formatDate(startDate),
-            endDate: this.formatDate(endDate),
-            minScore: minScore
+            startDate: startDateInput,
+            endDate: endDateInput,
+            minScore: minScore,
+            markets: selectedMarkets
         };
+    }
+    
+    getSelectedMarkets() {
+        const markets = [];
+        const marketCheckboxes = document.querySelectorAll('input[id^="market_"]');
+        
+        marketCheckboxes.forEach(checkbox => {
+            if (checkbox.checked) {
+                const marketName = checkbox.id.replace('market_', '');
+                markets.push(marketName);
+            }
+        });
+        
+        return markets;
+    }
+
+    // 验证日期范围输入
+    validateDateRange(startDate, endDate) {
+        if (!startDate || !endDate) {
+            console.warn('开始日期和结束日期不能为空');
+            return false;
+        }
+        
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        const today = new Date();
+        
+        // 检查日期格式
+        if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+            console.warn('日期格式无效');
+            return false;
+        }
+        
+        // 检查日期范围
+        if (start >= end) {
+            console.warn('开始日期必须早于结束日期');
+            return false;
+        }
+        
+        // 检查是否超过今天
+        if (end > today) {
+            console.warn('结束日期不能超过今天');
+            return false;
+        }
+        
+        // 检查回测周期是否合理（至少1天，最多10年）
+        const diffTime = end - start;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays < 1) {
+            console.warn('回测周期至少需要1天');
+            return false;
+        }
+        
+        if (diffDays > 3650) { // 10年
+            console.warn('回测周期不能超过10年');
+            return false;
+        }
+        
+        return true;
+    }
+
+    // 验证周期输入（保留兼容性）
+    validatePeriodInput(value, unit) {
+        // 检查数值是否有效
+        if (isNaN(value) || value <= 0 || value > 999) {
+            console.error('周期数值无效:', value);
+            return false;
+        }
+        
+        // 检查单位是否有效
+        const validUnits = ['days', 'months', 'years'];
+        if (!validUnits.includes(unit)) {
+            console.error('周期单位无效:', unit);
+            return false;
+        }
+        
+        // 检查合理的范围限制
+        if (unit === 'days' && value > 3650) { // 超过10年
+            console.warn('天数超过10年，建议使用年为单位');
+        } else if (unit === 'months' && value > 120) { // 超过10年
+            console.warn('月数超过10年，建议使用年为单位');
+        } else if (unit === 'years' && value > 20) { // 超过20年
+            console.warn('年数超过20年，数据可能不够准确');
+        }
+        
+        return true;
+    }
+
+    // 绑定日期范围事件
+    bindDateRangeEvents() {
+        const startDateInput = document.getElementById('startDate');
+        const endDateInput = document.getElementById('endDate');
+        
+        if (startDateInput && endDateInput) {
+            startDateInput.addEventListener('change', () => {
+                this.resetPresetButtons();
+                this.updateDateRangeInfo();
+            });
+            
+            endDateInput.addEventListener('change', () => {
+                this.resetPresetButtons();
+                this.updateDateRangeInfo();
+            });
+        }
+    }
+
+    // 初始化日期范围
+    initializeDateRange() {
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setFullYear(endDate.getFullYear() - 1); // 默认1年
+        
+        document.getElementById('endDate').value = this.formatDateForInput(endDate);
+        document.getElementById('startDate').value = this.formatDateForInput(startDate);
+        
+        this.updateDateRangeInfo();
+    }
+
+    // 重置快捷按钮状态
+    resetPresetButtons() {
+        const presetButtons = document.querySelectorAll('.preset-btn');
+        presetButtons.forEach(btn => {
+            btn.classList.remove('active');
+        });
+    }
+
+    // 更新日期范围信息显示
+    updateDateRangeInfo() {
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        const infoElement = document.getElementById('dateRangeInfo');
+        
+        if (!startDate || !endDate) {
+            infoElement.textContent = '请选择回测日期范围';
+            return;
+        }
+        
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        const diffTime = end - start;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays < 0) {
+            infoElement.textContent = '开始日期必须早于结束日期';
+            infoElement.style.color = '#dc3545';
+        } else {
+            const years = Math.floor(diffDays / 365);
+            const months = Math.floor((diffDays % 365) / 30);
+            const days = diffDays % 30;
+            
+            let periodText = '';
+            if (years > 0) periodText += `${years}年`;
+            if (months > 0) periodText += `${months}个月`;
+            if (days > 0) periodText += `${days}天`;
+            if (!periodText) periodText = '1天';
+            
+            infoElement.textContent = `回测周期: ${periodText} (${diffDays}天)`;
+            infoElement.style.color = '#495057';
+        }
+    }
+
+    // 格式化日期为输入框格式
+    formatDateForInput(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    // 绑定周期预设按钮事件
+    bindPeriodPresetEvents() {
+        const presetButtons = document.querySelectorAll('.preset-btn');
+        presetButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const days = parseInt(e.target.dataset.days);
+                
+                // 计算日期范围
+                const endDate = new Date();
+                const startDate = new Date();
+                startDate.setDate(endDate.getDate() - days);
+                
+                // 更新日期输入框
+                document.getElementById('startDate').value = this.formatDateForInput(startDate);
+                document.getElementById('endDate').value = this.formatDateForInput(endDate);
+                
+                // 更新按钮状态
+                presetButtons.forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                
+                // 更新日期范围信息
+                this.updateDateRangeInfo();
+                
+                console.log(`选择预设周期: ${days}天`);
+            });
+        });
     }
 
     formatDate(date) {
@@ -429,6 +659,32 @@ class QuantitativeStockSystem {
         setTimeout(() => {
             toast.style.display = 'none';
         }, 3000);
+    }
+
+    bindCheckboxEvents() {
+        // 为所有板块复选框绑定点击事件
+        const marketCheckboxes = document.querySelectorAll('.market-checkboxes input[type="checkbox"]');
+        marketCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', (e) => {
+                this.updateCheckboxVisual(e.target);
+            });
+        });
+    }
+
+    updateCheckboxVisual(checkbox) {
+        // 更新复选框的视觉状态
+        const checkmark = checkbox.nextElementSibling;
+        if (checkmark && checkmark.classList.contains('checkmark')) {
+            if (checkbox.checked) {
+                checkmark.style.background = '#2196F3';
+                checkmark.style.borderColor = '#2196F3';
+                checkmark.innerHTML = '✓';
+            } else {
+                checkmark.style.background = 'transparent';
+                checkmark.style.borderColor = '#ddd';
+                checkmark.innerHTML = '';
+            }
+        }
     }
 }
 

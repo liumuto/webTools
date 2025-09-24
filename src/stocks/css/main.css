@@ -111,6 +111,136 @@ body {
   box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
 }
 
+/* 日期范围选择器样式 */
+.date-range-group {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.date-input-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.date-label {
+  font-size: 0.85rem;
+  color: #666;
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.date-input {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  background-color: #fff;
+}
+
+.date-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.date-separator {
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 500;
+  margin-bottom: 4px;
+  flex-shrink: 0;
+}
+
+.date-info {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border-left: 3px solid #007bff;
+}
+
+.date-range-info {
+  font-size: 0.85rem;
+  color: #495057;
+  font-weight: 500;
+}
+
+/* 周期输入组合样式（保留兼容性） */
+.period-input-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.period-value {
+  flex: 1;
+  min-width: 80px;
+  text-align: center;
+}
+
+.period-unit {
+  flex: 0 0 80px;
+  min-width: 80px;
+}
+
+.form-text {
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+  display: block;
+}
+
+/* 周期预设按钮样式 */
+.period-presets {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.preset-btn {
+  padding: 6px 12px;
+  font-size: 12px;
+  border: 1px solid #ddd;
+  background: #f8f9fa;
+  color: #666;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  font-weight: 500;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.preset-btn:hover {
+  background: #e9ecef;
+  border-color: #adb5bd;
+  color: #495057;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.preset-btn.active {
+  background: #007bff;
+  border-color: #007bff;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+}
+
+.preset-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
 /* 因子权重滑块 */
 .factor-group {
   display: flex;
@@ -515,6 +645,7 @@ body {
   cursor: pointer;
   font-size: 14px;
   color: #333;
+  -webkit-user-select: none;
   user-select: none;
 }
 
@@ -546,6 +677,70 @@ body {
   color: white;
   font-size: 12px;
   font-weight: bold;
+}
+
+/* 板块选择区域样式 */
+.market-checkboxes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.market-checkboxes .checkbox-label {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 13px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background-color: #f8f9fa;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.market-checkboxes .checkbox-label input[type="checkbox"] {
+  display: none;
+}
+
+.market-checkboxes .checkbox-label .checkmark {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #ddd;
+  border-radius: 3px;
+  margin-right: 10px;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.market-checkboxes .checkbox-label input[type="checkbox"]:checked + .checkmark {
+  background: #2196F3;
+  border-color: #2196F3;
+}
+
+.market-checkboxes .checkbox-label input[type="checkbox"]:checked + .checkmark::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.market-checkboxes .checkbox-label:hover {
+  background-color: #e9ecef;
+}
+
+.market-checkboxes .checkbox-label input[type="checkbox"]:disabled + .checkmark {
+  background-color: #e9ecef;
+  border-color: #ced4da;
+  cursor: not-allowed;
+}
+
+.market-checkboxes .checkbox-label input[type="checkbox"]:disabled {
+  cursor: not-allowed;
 }
 
 /* 评分徽章 */
