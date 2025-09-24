@@ -69,7 +69,8 @@ class WebToolsApp {
       'StringSplitterTool': window.StringSplitterTool,
       'TimeDisplayTool': window.TimeDisplayTool,
       'EncoderTool': window.EncoderTool,
-      'ColorPickerTool': window.ColorPickerTool
+      'ColorPickerTool': window.ColorPickerTool,
+      'CalendarReminderTool': window.CalendarReminderTool
     };
 
     console.log('🔍 检查工具类可用性:');
@@ -132,6 +133,17 @@ class WebToolsApp {
       category: 'color',
       icon: 'palette',
       component: window.ColorPickerTool
+    });
+
+    // 日程提醒工具
+    console.log('📅 注册日程提醒工具...');
+    this.registerTool({
+      id: 'calendar-reminder',
+      name: '日程提醒工具',
+      description: '创建、管理日程事件，支持导出到电脑和手机系统日历',
+      category: 'time',
+      icon: 'calendar',
+      component: window.CalendarReminderTool
     });
 
     console.log('✅ 所有工具注册完成，已注册工具数量:', this.toolRegistry.size);
@@ -489,6 +501,11 @@ class WebToolsApp {
         const toolInstance = new toolConfig.component();
         modalBody.innerHTML = toolInstance.render();
         toolInstance.init();
+        
+        // 绑定事件监听器
+        if (toolInstance.bindEvents) {
+          toolInstance.bindEvents();
+        }
       } catch (error) {
         console.error('Failed to load tool:', error);
         modalBody.innerHTML = `
