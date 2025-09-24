@@ -25,11 +25,11 @@ import numpy as np
 import akshare as ak
 from datetime import datetime, timedelta
 from typing import Dict, List, Tuple, Optional
-import talib
-from scipy import stats
-from sklearn.preprocessing import StandardScaler
-import matplotlib.pyplot as plt
-import seaborn as sns
+# import talib  # 注释掉TA-Lib依赖
+# from scipy import stats  # 注释掉可选依赖
+# from sklearn.preprocessing import StandardScaler  # 注释掉可选依赖
+# import matplotlib.pyplot as plt  # 注释掉可选依赖
+# import seaborn as sns  # 注释掉可选依赖
 
 warnings.filterwarnings('ignore')
 

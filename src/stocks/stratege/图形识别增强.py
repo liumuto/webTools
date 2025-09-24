@@ -7,9 +7,9 @@
 import pandas as pd
 import numpy as np
 from typing import Dict, List, Tuple
-import matplotlib.pyplot as plt
-from scipy import signal
-from sklearn.cluster import KMeans
+# import matplotlib.pyplot as plt  # 注释掉可选依赖
+# from scipy import signal  # 注释掉可选依赖
+# from sklearn.cluster import KMeans  # 注释掉可选依赖
 
 class AdvancedPatternRecognition:
     """高级图形识别类"""

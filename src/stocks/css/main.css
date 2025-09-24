@@ -471,3 +471,270 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
 }
+
+/* 量化选股相关样式 */
+.strategy-tabs {
+  display: flex;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 10px 15px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  font-size: 14px;
+  color: #666;
+  transition: all 0.3s ease;
+}
+
+.tab-btn.active {
+  color: #2196F3;
+  border-bottom-color: #2196F3;
+  background: #f8f9ff;
+}
+
+.strategy-content {
+  display: none;
+}
+
+.strategy-content.active {
+  display: block;
+}
+
+.strategy-item {
+  margin-bottom: 15px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+  user-select: none;
+}
+
+.checkbox-label input[type="checkbox"] {
+  display: none;
+}
+
+.checkmark {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #ddd;
+  border-radius: 3px;
+  margin-right: 10px;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.checkbox-label input[type="checkbox"]:checked + .checkmark {
+  background: #2196F3;
+  border-color: #2196F3;
+}
+
+.checkbox-label input[type="checkbox"]:checked + .checkmark::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* 评分徽章 */
+.score-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: bold;
+  color: white;
+}
+
+.score-excellent {
+  background: #4CAF50;
+}
+
+.score-good {
+  background: #8BC34A;
+}
+
+.score-fair {
+  background: #FFC107;
+  color: #333;
+}
+
+.score-poor {
+  background: #FF5722;
+}
+
+/* 标签样式 */
+.tag {
+  display: inline-block;
+  padding: 2px 6px;
+  margin: 2px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: bold;
+  color: white;
+}
+
+.tag-primary { background: #2196F3; }
+.tag-success { background: #4CAF50; }
+.tag-info { background: #00BCD4; }
+.tag-warning { background: #FF9800; }
+.tag-danger { background: #F44336; }
+.tag-purple { background: #9C27B0; }
+.tag-blue { background: #3F51B5; }
+.tag-orange { background: #FF5722; }
+.tag-pink { background: #E91E63; }
+.tag-green { background: #8BC34A; }
+.tag-yellow { background: #FFEB3B; color: #333; }
+
+.indicator-tags, .pattern-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+
+/* 表格样式增强 */
+.stock-table th {
+  background: #f8f9fa;
+  font-weight: 600;
+  font-size: 12px;
+  padding: 12px 8px;
+  text-align: center;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.stock-table td {
+  padding: 10px 8px;
+  text-align: center;
+  font-size: 12px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.positive {
+  color: #4CAF50;
+  font-weight: bold;
+}
+
+.negative {
+  color: #F44336;
+  font-weight: bold;
+}
+
+/* 模态框样式 */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 8px;
+  max-width: 800px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: #333;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #999;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-btn:hover {
+  color: #333;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.analysis-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.analysis-section {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 6px;
+  border-left: 4px solid #2196F3;
+}
+
+.analysis-section h4 {
+  margin: 0 0 10px 0;
+  color: #333;
+  font-size: 16px;
+}
+
+.analysis-section p {
+  margin: 5px 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.criteria-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 8px;
+}
+
+.criteria-item {
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.criteria-item.met {
+  background: #e8f5e8;
+  color: #2e7d32;
+  border: 1px solid #c8e6c9;
+}
+
+.criteria-item.not-met {
+  background: #ffebee;
+  color: #c62828;
+  border: 1px solid #ffcdd2;
+}
