@@ -36,11 +36,24 @@ class ZhA:
         https://vip.stock.finance.sina.com.cn/mkt/#hs_a
         :return:
         """
-        self.stock_zh_a_spot_df = ak.stock_zh_a_spot()
-        # print(self.stock_zh_a_spot_df)
-        self.stock_zh_a_spot_df = self.stock_zh_a_spot_df[['代码', '名称']]
-        self.stock_zh_a_spot_df.to_csv(self.jc_data_path + self.filename_stock_codes_zh_a)
-        self.symbol_col = 0  # 代码列索引(与文件的索引差1，这里的序号index不算1列)
+        print("开始从新浪财经获取A股数据...")
+        try:
+            self.stock_zh_a_spot_df = ak.stock_zh_a_spot()
+            print(f"成功获取数据，共 {len(self.stock_zh_a_spot_df)} 条记录")
+            # print(self.stock_zh_a_spot_df)
+            self.stock_zh_a_spot_df = self.stock_zh_a_spot_df[['代码', '名称']]
+            print(f"筛选后数据形状: {self.stock_zh_a_spot_df.shape}")
+            print("前5条数据预览:")
+            print(self.stock_zh_a_spot_df.head())
+            
+            filename = self.jc_data_path + self.filename_stock_codes_zh_a
+            self.stock_zh_a_spot_df.to_csv(filename, index=False, encoding='utf-8-sig')
+            print(f"数据已保存到文件: {filename}")
+            self.symbol_col = 0  # 代码列索引(与文件的索引差1，这里的序号index不算1列)
+        except Exception as e:
+            print(f"获取数据时发生错误: {e}")
+            import traceback
+            traceback.print_exc()
 
     def read_stock_codes_zh_a(self):
         """
