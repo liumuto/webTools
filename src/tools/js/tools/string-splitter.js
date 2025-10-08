@@ -22,6 +22,13 @@ class StringSplitterTool {
     this.customRows = 50;
     this.customCols = 10;
     this.useCustomDimensions = false;
+    this.cleanOptions = {
+      trimSpaces: false,        // 去除首尾空格
+      removeEmptyLines: false,  // 去除空行
+      removeEmptyCells: false, // 去除空单元格
+      removeLineBreaks: false, // 去除换行符
+      extractNumbers: false    // 只提取数字内容
+    };
     this.filterOptions = {
       enabled: false,
       filters: [
@@ -108,6 +115,53 @@ class StringSplitterTool {
                 >
               </div>
             </div>
+
+            <div class="string-splitter__clean-section">
+              <div class="string-splitter__clean-header">
+                <h4 class="string-splitter__clean-title">数据清理选项</h4>
+              </div>
+              
+              <div class="string-splitter__clean-options">
+                <div class="string-splitter__option-row">
+                  <div class="string-splitter__option-group">
+                    <label class="string-splitter__checkbox-label">
+                      <input type="checkbox" id="trimSpaces" class="string-splitter__checkbox">
+                      <span class="string-splitter__checkbox-text">去除首尾空格</span>
+                    </label>
+                  </div>
+                  
+                  <div class="string-splitter__option-group">
+                    <label class="string-splitter__checkbox-label">
+                      <input type="checkbox" id="removeEmptyLines" class="string-splitter__checkbox">
+                      <span class="string-splitter__checkbox-text">去除空行</span>
+                    </label>
+                  </div>
+                  
+                  <div class="string-splitter__option-group">
+                    <label class="string-splitter__checkbox-label">
+                      <input type="checkbox" id="removeEmptyCells" class="string-splitter__checkbox">
+                      <span class="string-splitter__checkbox-text">去除空单元格</span>
+                    </label>
+                  </div>
+                </div>
+                
+                <div class="string-splitter__option-row">
+                  <div class="string-splitter__option-group">
+                    <label class="string-splitter__checkbox-label">
+                      <input type="checkbox" id="removeLineBreaks" class="string-splitter__checkbox">
+                      <span class="string-splitter__checkbox-text">去除换行符</span>
+                    </label>
+                  </div>
+                  
+                  <div class="string-splitter__option-group">
+                    <label class="string-splitter__checkbox-label">
+                      <input type="checkbox" id="extractNumbers" class="string-splitter__checkbox">
+                      <span class="string-splitter__checkbox-text">只提取数字内容</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div class="string-splitter__filter-section">
@@ -190,6 +244,11 @@ class StringSplitterTool {
     const useCustomDimensions = document.getElementById('useCustomDimensions');
     const customRows = document.getElementById('customRows');
     const customCols = document.getElementById('customCols');
+    const trimSpaces = document.getElementById('trimSpaces');
+    const removeEmptyLines = document.getElementById('removeEmptyLines');
+    const removeEmptyCells = document.getElementById('removeEmptyCells');
+    const removeLineBreaks = document.getElementById('removeLineBreaks');
+    const extractNumbers = document.getElementById('extractNumbers');
     const enableFilter = document.getElementById('enableFilter');
     const addFilterBtn = document.getElementById('addFilterBtn');
     const splitBtn = document.getElementById('splitBtn');
@@ -227,6 +286,27 @@ class StringSplitterTool {
     // 自定义列数变化
     customCols.addEventListener('input', () => {
       this.customCols = parseInt(customCols.value) || 10;
+    });
+
+    // 数据清理选项变化
+    trimSpaces.addEventListener('change', () => {
+      this.cleanOptions.trimSpaces = trimSpaces.checked;
+    });
+
+    removeEmptyLines.addEventListener('change', () => {
+      this.cleanOptions.removeEmptyLines = removeEmptyLines.checked;
+    });
+
+    removeEmptyCells.addEventListener('change', () => {
+      this.cleanOptions.removeEmptyCells = removeEmptyCells.checked;
+    });
+
+    removeLineBreaks.addEventListener('change', () => {
+      this.cleanOptions.removeLineBreaks = removeLineBreaks.checked;
+    });
+
+    extractNumbers.addEventListener('change', () => {
+      this.cleanOptions.extractNumbers = extractNumbers.checked;
     });
 
     // 筛选功能切换
@@ -277,6 +357,65 @@ class StringSplitterTool {
   }
 
   /**
+   * 预处理文本
+   */
+  preprocessText(text) {
+    let processedText = text;
+    
+    // 去除换行符
+    if (this.cleanOptions.removeLineBreaks) {
+      processedText = processedText.replace(/\r?\n/g, ' ');
+    }
+    
+    return processedText;
+  }
+
+  /**
+   * 应用数据清理
+   */
+  applyDataCleaning() {
+    if (!this.cleanOptions.trimSpaces && 
+        !this.cleanOptions.removeEmptyLines && 
+        !this.cleanOptions.removeEmptyCells && 
+        !this.cleanOptions.extractNumbers) {
+      return;
+    }
+
+    this.data = this.data.map(row => {
+      return row.map(cell => {
+        let processedCell = cell;
+        
+        // 去除首尾空格
+        if (this.cleanOptions.trimSpaces) {
+          processedCell = processedCell.trim();
+        }
+        
+        // 只提取数字内容
+        if (this.cleanOptions.extractNumbers) {
+          const numbers = processedCell.match(/\d+(?:\.\d+)?/g);
+          processedCell = numbers ? numbers.join(' ') : '';
+        }
+        
+        return processedCell;
+      });
+    });
+
+    // 去除空行
+    if (this.cleanOptions.removeEmptyLines) {
+      this.data = this.data.filter(row => {
+        return row.some(cell => cell.trim() !== '');
+      });
+    }
+
+    // 去除空单元格
+    if (this.cleanOptions.removeEmptyCells) {
+      this.data = this.data.map(row => {
+        return row.filter(cell => cell.trim() !== '');
+      });
+    }
+  }
+
+  /**
    * 处理字符串分割
    */
   processString() {
@@ -289,8 +428,11 @@ class StringSplitterTool {
     }
 
     try {
+      // 预处理文本
+      let processedText = this.preprocessText(text);
+      
       // 分割字符串
-      const lines = text.split('\n');
+      const lines = processedText.split('\n');
       this.data = lines.map(line => {
         if (this.delimiter === '\t') {
           return line.split('\t');
@@ -298,6 +440,9 @@ class StringSplitterTool {
           return line.split(this.delimiter);
         }
       });
+
+      // 应用数据清理
+      this.applyDataCleaning();
 
       // 应用筛选
       this.applyFilter();
@@ -826,6 +971,11 @@ class StringSplitterTool {
     const inputText = document.getElementById('inputText');
     const customDelimiter = document.getElementById('customDelimiter');
     const useCustomDimensions = document.getElementById('useCustomDimensions');
+    const trimSpaces = document.getElementById('trimSpaces');
+    const removeEmptyLines = document.getElementById('removeEmptyLines');
+    const removeEmptyCells = document.getElementById('removeEmptyCells');
+    const removeLineBreaks = document.getElementById('removeLineBreaks');
+    const extractNumbers = document.getElementById('extractNumbers');
     const enableFilter = document.getElementById('enableFilter');
     const tableBody = document.getElementById('tableBody');
     const dataInfo = document.getElementById('dataInfo');
@@ -837,6 +987,11 @@ class StringSplitterTool {
     
     // 重置选项
     useCustomDimensions.checked = false;
+    trimSpaces.checked = false;
+    removeEmptyLines.checked = false;
+    removeEmptyCells.checked = false;
+    removeLineBreaks.checked = false;
+    extractNumbers.checked = false;
     enableFilter.checked = false;
     
     // 隐藏相关选项
@@ -861,6 +1016,13 @@ class StringSplitterTool {
     this.data = [];
     this.filteredData = [];
     this.useCustomDimensions = false;
+    this.cleanOptions = {
+      trimSpaces: false,
+      removeEmptyLines: false,
+      removeEmptyCells: false,
+      removeLineBreaks: false,
+      extractNumbers: false
+    };
     this.filterOptions.enabled = false;
     this.filterOptions.filters = [
       {
