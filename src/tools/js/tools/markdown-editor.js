@@ -62,6 +62,12 @@ class MarkdownEditor {
               </svg>
               导出 HTML
             </button>
+            <button type="button" class="btn btn--secondary" id="exportPdf">
+              <svg viewBox="0 0 24 24" class="btn__icon" aria-hidden="true">
+                <path d="M20 2H8c-1.1 0-2 .9-2 2v4H4c-1.1 0-2 .9-2 2v8h4v4h12c1.1 0 2-.9 2-2v-4h2v-8c0-1.1-.9-2-2-2h-2V4c0-1.1-.9-2-2-2zm-3 18H9v-5h8v5zm3-7H4v-3h16v3zm-2-5H8V4h10v4z"/>
+              </svg>
+              导出 PDF
+            </button>
             <button type="button" class="btn btn--outline" id="previewModeToggle">预览模式</button>
             <button type="button" class="btn btn--outline" id="themeToggle">
               <svg viewBox="0 0 24 24" class="btn__icon" aria-hidden="true">
@@ -116,6 +122,7 @@ class MarkdownEditor {
     this.newFileBtn = document.getElementById('mdNewFile');
     this.saveMdBtn = document.getElementById('saveMdBtn');
     this.exportHtmlBtn = document.getElementById('exportHtml');
+    this.exportPdfBtn = document.getElementById('exportPdf');
     this.previewModeBtn = document.getElementById('previewModeToggle');
     this.themeToggle = document.getElementById('themeToggle');
     this.toolbar = document.getElementById('mdToolbar');
@@ -170,6 +177,10 @@ class MarkdownEditor {
 
     this.exportHtmlBtn.addEventListener('click', () => {
       this.exportHtml();
+    });
+
+    this.exportPdfBtn.addEventListener('click', () => {
+      this.exportPdf();
     });
 
     this.previewModeBtn.addEventListener('click', () => {
@@ -680,6 +691,213 @@ class MarkdownEditor {
 </html>`;
     this.downloadFile(fullHtml, 'document.html', 'text/html;charset=utf-8');
     this.setStatusMessage('已触发下载 HTML 文件');
+  }
+
+  async exportPdf() {
+    if (!window.jspdf || !window.jspdf.jsPDF) {
+      this.setStatusMessage('PDF 依赖加载失败');
+      return;
+    }
+    if (typeof html2canvas === 'undefined') {
+      this.setStatusMessage('截图依赖加载失败');
+      return;
+    }
+
+    const previousPreviewMode = this.isPreviewOnly;
+    if (!this.isPreviewOnly) {
+      this.isPreviewOnly = true;
+      this.applyPreviewMode();
+      this.updateStatusBar('准备导出 PDF');
+    }
+
+    await new Promise((resolve) => {
+      window.setTimeout(resolve, 220);
+    });
+
+    const exportHost = document.createElement('div');
+    const exportPreview = document.createElement('div');
+    const previewRect = this.previewElement.getBoundingClientRect();
+    const exportWidth = Math.max(
+      900,
+      Math.ceil(previewRect.width || this.previewElement.scrollWidth || 900)
+    );
+    const backgroundColor = this.isDarkTheme ? '#1e1e1e' : '#ffffff';
+
+    exportHost.className = 'markdown-editor__pdf-host';
+    exportHost.style.position = 'fixed';
+    exportHost.style.left = '-100000px';
+    exportHost.style.top = '0';
+    exportHost.style.width = `${exportWidth}px`;
+    exportHost.style.padding = '32px';
+    exportHost.style.margin = '0';
+    exportHost.style.background = backgroundColor;
+    exportHost.style.zIndex = '-1';
+
+    exportPreview.className = this.previewElement.className;
+    exportPreview.style.width = '100%';
+    exportPreview.style.maxWidth = 'none';
+    exportPreview.style.margin = '0';
+    exportPreview.style.padding = '0';
+    exportPreview.style.background = backgroundColor;
+    exportPreview.innerHTML = this.previewElement.innerHTML;
+    this.decorateExportPreview(exportPreview);
+
+    exportHost.appendChild(exportPreview);
+    document.body.appendChild(exportHost);
+
+    try {
+      const canvas = await html2canvas(exportPreview, {
+        backgroundColor,
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: exportHost.scrollWidth,
+        windowHeight: exportHost.scrollHeight
+      });
+
+      const jsPDF = window.jspdf.jsPDF;
+      const pdf = new jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 24;
+      const usableWidth = pageWidth - margin * 2;
+      const usableHeight = pageHeight - margin * 2;
+      const contentWidthCss = exportPreview.getBoundingClientRect().width;
+      const scaleRatio = canvas.width / contentWidthCss;
+      const pageHeightCss = usableHeight * contentWidthCss / usableWidth;
+      const breakpoints = this.computePdfBreakpoints(exportPreview, pageHeightCss);
+
+      breakpoints.forEach((section, index) => {
+        if (index > 0) {
+          pdf.addPage();
+        }
+        const sliceStartPx = Math.max(0, Math.floor(section.start * scaleRatio));
+        const sliceHeightPx = Math.max(1, Math.ceil((section.end - section.start) * scaleRatio));
+        const pageCanvas = document.createElement('canvas');
+        const pageContext = pageCanvas.getContext('2d');
+
+        pageCanvas.width = canvas.width;
+        pageCanvas.height = sliceHeightPx;
+
+        pageContext.fillStyle = backgroundColor;
+        pageContext.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+        pageContext.drawImage(
+          canvas,
+          0,
+          sliceStartPx,
+          canvas.width,
+          sliceHeightPx,
+          0,
+          0,
+          canvas.width,
+          sliceHeightPx
+        );
+
+        const pageImageHeight = sliceHeightPx * usableWidth / canvas.width;
+        const pageImage = pageCanvas.toDataURL('image/png');
+        pdf.addImage(pageImage, 'PNG', margin, margin, usableWidth, pageImageHeight, undefined, 'FAST');
+      });
+
+      pdf.save('document.pdf');
+      this.setStatusMessage('已导出预览区 PDF');
+    } catch (error) {
+      console.error('PDF 导出失败:', error);
+      this.setStatusMessage('PDF 导出失败');
+    } finally {
+      if (exportHost.isConnected) {
+        document.body.removeChild(exportHost);
+      }
+      if (!previousPreviewMode) {
+        this.isPreviewOnly = false;
+        this.applyPreviewMode();
+      }
+      this.updateStatusBar();
+    }
+  }
+
+  decorateExportPreview(container) {
+    container.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach((node) => {
+      node.setAttribute('data-pdf-block', 'heading');
+    });
+    container.querySelectorAll('pre').forEach((node) => {
+      node.setAttribute('data-pdf-block', 'code');
+    });
+    container.querySelectorAll('table').forEach((node) => {
+      node.setAttribute('data-pdf-block', 'table');
+    });
+    container.querySelectorAll('.markdown-editor__mermaid').forEach((node) => {
+      node.setAttribute('data-pdf-block', 'mermaid');
+    });
+  }
+
+  computePdfBreakpoints(container, pageHeightCss) {
+    const totalHeight = container.scrollHeight;
+    const sections = [];
+    const children = Array.from(container.children);
+    let start = 0;
+
+    while (start < totalHeight - 1) {
+      const idealEnd = Math.min(start + pageHeightCss, totalHeight);
+      let breakpoint = this.findPdfBreakpoint(children, start, idealEnd, pageHeightCss, totalHeight);
+
+      if (breakpoint <= start + 24) {
+        breakpoint = Math.min(totalHeight, start + pageHeightCss);
+      }
+
+      sections.push({ start, end: breakpoint });
+      start = breakpoint;
+    }
+
+    return sections;
+  }
+
+  findPdfBreakpoint(children, start, idealEnd, pageHeightCss, totalHeight) {
+    let best = idealEnd;
+    const minBreak = start + Math.min(160, pageHeightCss * 0.35);
+    const lateBreakLimit = Math.min(totalHeight, start + pageHeightCss * 1.15);
+
+    for (let i = 0; i < children.length; i += 1) {
+      const node = children[i];
+      const top = node.offsetTop;
+      const bottom = top + node.offsetHeight;
+      if (bottom <= start + 24) {
+        continue;
+      }
+      if (top >= lateBreakLimit) {
+        break;
+      }
+
+      const type = node.getAttribute('data-pdf-block') || '';
+      const next = children[i + 1];
+      const nextType = next ? (next.getAttribute('data-pdf-block') || '') : '';
+
+      if (type === 'heading') {
+        const protectedBottom = next ? next.offsetTop + next.offsetHeight : bottom;
+        if (top < idealEnd && protectedBottom > idealEnd && top > minBreak) {
+          return top;
+        }
+      }
+
+      if ((type === 'code' || type === 'table' || type === 'mermaid')
+        && top < idealEnd && bottom > idealEnd) {
+        if (node.offsetHeight <= pageHeightCss * 0.92 && top > minBreak) {
+          return top;
+        }
+        best = Math.max(best, Math.min(bottom, lateBreakLimit));
+      }
+
+      if ((nextType === 'heading') && bottom > minBreak && bottom <= idealEnd) {
+        best = bottom;
+      }
+
+      if (bottom > minBreak && bottom <= idealEnd) {
+        best = bottom;
+      }
+    }
+
+    return Math.min(best, totalHeight);
   }
 
   downloadFile(content, filename, contentType) {
