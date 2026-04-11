@@ -64,87 +64,102 @@ class WebToolsApp {
   registerTools() {
     console.log('🔧 开始注册工具...');
     
-    // 检查工具类是否可用
-    const toolClasses = {
-      'StringSplitterTool': window.StringSplitterTool,
-      'TimeDisplayTool': window.TimeDisplayTool,
-      'EncoderTool': window.EncoderTool,
-      'ColorPickerTool': window.ColorPickerTool,
-      'CalendarReminderTool': window.CalendarReminderTool
-    };
+    // 从ToolRegistry获取工具
+    if (typeof window !== 'undefined' && window.ToolRegistry) {
+      const toolsFromRegistry = window.ToolRegistry.getAllTools();
+      console.log('🔍 从ToolRegistry获取工具数量:', toolsFromRegistry.length);
+      console.log('🔍 从ToolRegistry获取的工具:', toolsFromRegistry.map(tool => tool.id));
+      
+      // 注册从ToolRegistry获取的工具
+      toolsFromRegistry.forEach(tool => {
+        console.log(`📝 注册工具: ${tool.name} (${tool.id})`);
+        this.registerTool(tool);
+      });
+    } else {
+      console.warn('⚠️ window.ToolRegistry 不可用，使用备用注册方式');
+      
+      // 备用注册方式
+      const toolClasses = {
+        'StringSplitterTool': window.StringSplitterTool,
+        'TimeDisplayTool': window.TimeDisplayTool,
+        'EncoderTool': window.EncoderTool,
+        'ColorPickerTool': window.ColorPickerTool,
+        'CalendarReminderTool': window.CalendarReminderTool
+      };
 
-    console.log('🔍 检查工具类可用性:');
-    Object.entries(toolClasses).forEach(([name, cls]) => {
-      console.log(`  ${cls ? '✅' : '❌'} ${name}:`, cls ? '已加载' : '未找到');
-    });
+      console.log('🔍 检查工具类可用性:');
+      Object.entries(toolClasses).forEach(([name, cls]) => {
+        console.log(`  ${cls ? '✅' : '❌'} ${name}:`, cls ? '已加载' : '未找到');
+      });
 
-    // 检查缺失的工具类
-    const missingTools = Object.entries(toolClasses)
-      .filter(([name, cls]) => !cls)
-      .map(([name]) => name);
+      // 检查缺失的工具类
+      const missingTools = Object.entries(toolClasses)
+        .filter(([name, cls]) => !cls)
+        .map(([name]) => name);
 
-    if (missingTools.length > 0) {
-      console.error('❌ 缺少工具类:', missingTools);
-      this.showError(`缺少工具类: ${missingTools.join(', ')}`);
-      return;
+      if (missingTools.length > 0) {
+        console.error('❌ 缺少工具类:', missingTools);
+        this.showError(`缺少工具类: ${missingTools.join(', ')}`);
+        return;
+      }
+
+      console.log('✅ 所有工具类检查通过，开始注册...');
+
+      // 字符串分割工具
+      console.log('📝 注册字符串分割工具...');
+      this.registerTool({
+        id: 'string-splitter',
+        name: '字符串分割器',
+        description: '将字符串按分隔符分割为网格数据，支持自定义分隔符和CSV导出',
+        category: 'text',
+        icon: 'scissors',
+        component: window.StringSplitterTool
+      });
+
+      // 时间显示工具
+      console.log('⏰ 注册时间显示工具...');
+      this.registerTool({
+        id: 'time-display',
+        name: '网络时间显示',
+        description: '显示当前网络时间，支持时区转换、时间戳转换和倒计时功能',
+        category: 'time',
+        icon: 'clock',
+        component: window.TimeDisplayTool
+      });
+
+      // 编码转换工具
+      console.log('🔐 注册编码转换工具...');
+      this.registerTool({
+        id: 'encoder',
+        name: '编码转换器',
+        description: '支持Base64编解码、URL编解码、JSON格式化和二维码生成',
+        category: 'encode',
+        icon: 'code',
+        component: window.EncoderTool
+      });
+
+      // 颜色选择器工具
+      console.log('🎨 注册颜色选择器工具...');
+      this.registerTool({
+        id: 'color-picker',
+        name: '颜色选择器',
+        description: '支持HEX、RGB、HSL格式转换，提供配色方案和渐变生成器',
+        category: 'color',
+        icon: 'palette',
+        component: window.ColorPickerTool
+      });
+
+      // 日程提醒工具
+      console.log('📅 注册日程提醒工具...');
+      this.registerTool({
+        id: 'calendar-reminder',
+        name: '日程提醒工具',
+        description: '创建、管理日程事件，支持导出到电脑和手机系统日历',
+        category: 'time',
+        icon: 'calendar',
+        component: window.CalendarReminderTool
+      });
     }
-
-    console.log('✅ 所有工具类检查通过，开始注册...');
-
-    // 字符串分割工具
-    console.log('📝 注册字符串分割工具...');
-    this.registerTool({
-      id: 'string-splitter',
-      name: '字符串分割器',
-      description: '将字符串按分隔符分割为网格数据，支持自定义分隔符和CSV导出',
-      category: 'text',
-      icon: 'scissors',
-      component: window.StringSplitterTool
-    });
-
-    // 时间显示工具
-    console.log('⏰ 注册时间显示工具...');
-    this.registerTool({
-      id: 'time-display',
-      name: '网络时间显示',
-      description: '显示当前网络时间，支持时区转换、时间戳转换和倒计时功能',
-      category: 'time',
-      icon: 'clock',
-      component: window.TimeDisplayTool
-    });
-
-    // 编码转换工具
-    console.log('🔐 注册编码转换工具...');
-    this.registerTool({
-      id: 'encoder',
-      name: '编码转换器',
-      description: '支持Base64编解码、URL编解码、JSON格式化和二维码生成',
-      category: 'encode',
-      icon: 'code',
-      component: window.EncoderTool
-    });
-
-    // 颜色选择器工具
-    console.log('🎨 注册颜色选择器工具...');
-    this.registerTool({
-      id: 'color-picker',
-      name: '颜色选择器',
-      description: '支持HEX、RGB、HSL格式转换，提供配色方案和渐变生成器',
-      category: 'color',
-      icon: 'palette',
-      component: window.ColorPickerTool
-    });
-
-    // 日程提醒工具
-    console.log('📅 注册日程提醒工具...');
-    this.registerTool({
-      id: 'calendar-reminder',
-      name: '日程提醒工具',
-      description: '创建、管理日程事件，支持导出到电脑和手机系统日历',
-      category: 'time',
-      icon: 'calendar',
-      component: window.CalendarReminderTool
-    });
 
     console.log('✅ 所有工具注册完成，已注册工具数量:', this.toolRegistry.size);
   }
@@ -508,6 +523,12 @@ class WebToolsApp {
         }
       } catch (error) {
         console.error('Failed to load tool:', error);
+        const errText = error && error.message
+          ? String(error.message)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+          : '无法加载该工具，请稍后重试';
         modalBody.innerHTML = `
           <div class="empty-state">
             <div class="empty-state__icon">
@@ -516,7 +537,7 @@ class WebToolsApp {
               </svg>
             </div>
             <h3 class="empty-state__title">工具加载失败</h3>
-            <p class="empty-state__description">无法加载该工具，请稍后重试</p>
+            <p class="empty-state__description">${errText}</p>
           </div>
         `;
       }
@@ -647,22 +668,24 @@ class WebToolsApp {
   }
 }
 
-// 工具注册表
-window.ToolRegistry = {
-  tools: new Map(),
-  
-  register(toolConfig) {
-    this.tools.set(toolConfig.id, toolConfig);
-  },
-  
-  getTool(id) {
-    return this.tools.get(id);
-  },
-  
-  getAllTools() {
-    return Array.from(this.tools.values());
-  }
-};
+// 工具注册表（由 utils.js 初始化；此处仅兜底，避免覆盖已注册工具）
+if (!window.ToolRegistry) {
+  window.ToolRegistry = {
+    tools: new Map(),
+
+    register(toolConfig) {
+      this.tools.set(toolConfig.id, toolConfig);
+    },
+
+    getTool(id) {
+      return this.tools.get(id);
+    },
+
+    getAllTools() {
+      return Array.from(this.tools.values());
+    }
+  };
+}
 
 // 页面加载完成后初始化应用
 document.addEventListener('DOMContentLoaded', () => {

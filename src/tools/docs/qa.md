@@ -404,3 +404,49 @@
   - 完成集成测试和最终验证
   - 更新项目文档
   - 准备发布版本
+
+---
+
+## 📅 2026-04-11 - Markdown 工具首页无入口
+
+### 🔍 问题描述
+- **背景**：在 `src/tools/ui/index.html` 中已引入 `markdown-editor.js` 与样式，期望在工具网格中出现「Markdown编辑器」卡片。
+- **现象**：首页不显示该工具入口；控制台可能报脚本 404 或注册失败。
+- **影响**：无法从工具集打开 Markdown 编辑器。
+
+### 💡 解决思路
+- **原因 1**：`index.html` 引用路径为 `../js/tools/markdown-editor.js`（即 `src/tools/js/tools/`），实际文件只在 `src/js/tools/markdown-editor.js`，脚本未加载。
+- **原因 2**：`window.ToolRegistry` 原在 `app.js` 末尾赋值，各工具脚本先于 `app.js` 执行时 `ToolRegistry` 不存在，无法 `register`；加载 `app.js` 后又用空表覆盖，导致从注册表读到的工具列表为空（与「仅有 Markdown 不显示」并存时，表现为新工具永远进不了列表）。
+
+### 🔧 代码变更
+- **新增**：`src/tools/js/tools/markdown-editor.js`（与首页引用路径一致，并增加 `'use strict'`）。
+- **修改**：`src/tools/js/utils.js` 在文件末尾初始化全局 `ToolRegistry`，保证工具脚本加载时即可注册。
+- **修改**：`src/tools/js/app.js` 中仅在 `!window.ToolRegistry` 时创建注册表，避免覆盖已注册工具。
+- **删除**：`src/js/tools/markdown-editor.js`（避免双份维护，以后以 `src/tools/js/tools/markdown-editor.js` 为准）。
+
+### ⚡ 技术要点
+- 脚本顺序：`utils.js` → 各 `tools/*.js`（内联 `register`）→ `app.js`（`registerTools` 从 `ToolRegistry` 拉取）。
+
+### ✅ 测试验证
+- 打开 `src/tools/ui/index.html`，应能看到「Markdown编辑器」卡片；点击后在弹窗中正常编辑与预览。
+
+### 🚀 后续优化
+- 可将文件输入框的 `display:none` 改为 BEM 工具类，符合「禁止内联样式」规范。
+
+---
+
+## 📅 2026-04-11 - Markdown 弹窗「工具加载失败」与需求对齐
+
+### 🔍 问题描述
+- **现象**：打开 Markdown 编辑器时弹窗显示「工具加载失败」。
+- **根因**：marked v4 UMD 全局为对象，应使用 `marked.parse()`，原先用 `marked(str)` 会抛出 `TypeError`；`highlight.js` 主题 CSS 曾误用 `<script>` 引入；样式文件未落在 `src/tools/css/` 导致 404。
+
+### 🔧 代码变更
+- `markdown-editor.js`：`runMarkedParse` 优先 `marked.parse`，`init` 不再重复调用 `bindEvents`（与 `app.js` 约定一致）；增加 DOMPurify 过滤、10MB 限制、拖拽上传、工具栏、快捷键、分栏比例、状态栏、友好错误文案等（对齐需求文档）。
+- `index.html`：主题样式改为 `<link>`；增加 `dompurify.min.js`。
+- `src/tools/css/markdown-editor.css`：补齐工具页引用路径与新增 UI 样式。
+- `app.js`：加载失败时展示具体错误信息（转义后插入）。
+- `docs/需求文档/markdown工具.md`：更新技术依赖说明（marked.parse、DOMPurify、保存方式）。
+
+### ✅ 测试验证
+- 打开工具集首页 → Markdown 编辑器 → 应正常渲染空白编辑区与预览；输入标题/代码块可预览；保存/导出、主题切换可用。

@@ -423,3 +423,22 @@ window.Utils = {
   DOMUtils,
   NotificationUtils
 };
+
+/**
+ * 全局工具注册表（须在各工具脚本之前初始化，否则无法自动 register）
+ */
+window.ToolRegistry = {
+  tools: new Map(),
+
+  register(toolConfig) {
+    this.tools.set(toolConfig.id, toolConfig);
+  },
+
+  getTool(id) {
+    return this.tools.get(id);
+  },
+
+  getAllTools() {
+    return Array.from(this.tools.values());
+  }
+};
