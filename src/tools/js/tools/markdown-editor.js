@@ -642,26 +642,16 @@ class MarkdownEditor {
   }
 
   goBack() {
-    // 从DOM中移除Markdown编辑器元素
-    if (this.rootElement && this.rootElement.parentNode) {
-      this.rootElement.parentNode.removeChild(this.rootElement);
+    if (window.webToolsApp && typeof window.webToolsApp.closeModal === 'function') {
+      window.webToolsApp.closeModal();
+      return;
     }
-    
-    // 清理所有可能的markdown-editor元素
-    const allEditors = document.querySelectorAll('.markdown-editor');
-    allEditors.forEach(editor => {
-      if (editor.parentNode) {
-        editor.parentNode.removeChild(editor);
-      }
-    });
-    
-    // 尝试显示工具目录
-    if (typeof window.WebToolsApp !== 'undefined' && window.WebToolsApp.instance) {
-      window.WebToolsApp.instance.showToolList();
-    } else {
-      // 如果WebToolsApp不可用，尝试返回上一页
-      window.history.back();
+
+    const modal = document.getElementById('toolModal');
+    if (modal) {
+      modal.classList.remove('modal--active');
     }
+    document.body.style.overflow = '';
   }
 }
 
