@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Markdown 编辑工具</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:"Microsoft YaHei",sans-serif;background:#f5f7fb;color:#1f2937}.app{min-height:100vh;display:flex;flex-direction:column}.bar{display:flex;flex-wrap:wrap;gap:8px;padding:12px;background:#fff;border-bottom:1px solid #dbe3ee;position:sticky;top:0}.btn,.sel{height:36px;padding:0 12px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;font:inherit}.btn{cursor:pointer}.btn:hover{background:#f8fafc}.main{flex:1;display:flex;min-height:0}.pane{flex:1;min-width:0;padding:16px;overflow:auto}.pane--left{border-right:1px solid #dbe3ee}.label{display:block;margin-bottom:8px;font-size:13px;color:#64748b}.txt{width:100%;height:calc(100vh - 130px);border:0;outline:0;resize:none;background:transparent;color:inherit;font:14px/1.7 Consolas,monospace;white-space:pre-wrap}.preview{line-height:1.8;word-break:break-word}.preview pre{overflow:auto;padding:14px;border-radius:10px;background:#0f172a;color:#e2e8f0}.preview code{padding:2px 6px;border-radius:6px;background:#eef2ff;font-family:Consolas,monospace}.preview pre code{padding:0;background:transparent;color:inherit}.preview blockquote{margin:1em 0;padding-left:12px;border-left:4px solid #cbd5e1;color:#475569}.preview table{width:100%;border-collapse:collapse}.preview th,.preview td{border:1px solid #cbd5e1;padding:8px;text-align:left}.status{padding:10px 16px;background:#fff;border-top:1px solid #dbe3ee;font-size:12px;color:#64748b}.hide{display:none}.drag{outline:2px dashed #2563eb;outline-offset:-6px}.mermaid-box{padding:12px;border-radius:10px;background:#fff;overflow:auto}.dark{background:#0f172a;color:#e5e7eb}.dark .bar,.dark .status{background:#111827;border-color:#334155}.dark .pane--left{border-color:#334155}.dark .btn,.dark .sel{background:#1e293b;color:#e5e7eb;border-color:#475569}.dark .label{color:#94a3b8}.dark .preview code{background:#1e293b}.dark .preview blockquote{color:#94a3b8;border-left-color:#475569}.dark .mermaid-box{background:#111827}@media (max-width:768px){.main{flex-direction:column}.pane--left{border-right:0;border-bottom:1px solid #dbe3ee}.txt{height:40vh}}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+</head>
+<body>
+<div class="app" id="app">
+<div class="bar" id="bar">
+<button type="button" class="btn" data-a="new">新建</button>
+<button type="button" class="btn" data-a="open">上传</button>
+<button type="button" class="btn" data-a="md">保存 MD</button>
+<button type="button" class="btn" data-a="html">导出 HTML</button>
+<button type="button" class="btn" data-a="theme">切换主题</button>
+<button type="button" class="btn" data-w="**">加粗</button>
+<button type="button" class="btn" data-w="*">斜体</button>
+<button type="button" class="btn" data-w="`">代码</button>
+<button type="button" class="btn" data-l="# ">H1</button>
+<button type="button" class="btn" data-l="- ">列表</button>
+<select id="font" class="sel"><option value="12">12px</option><option value="14" selected>14px</option><option value="16">16px</option><option value="18">18px</option></select>
+<input id="file" class="hide" type="file" accept=".md,.markdown,text/plain">
+</div>
+<div class="main">
+<section class="pane pane--left" id="drop"><label class="label" for="editor">编辑区（支持拖拽 .md 文件）</label><textarea id="editor" class="txt"></textarea></section>
+<section class="pane"><div class="label">预览区</div><div id="preview" class="preview"></div></section>
+</div>
+<div id="status" class="status">就绪</div>
+</div>
+<script>
+'use strict';
+const app=document.getElementById('app');
+const bar=document.getElementById('bar');
+const editor=document.getElementById('editor');
+const preview=document.getElementById('preview');
+const statusBar=document.getElementById('status');
+const file=document.getElementById('file');
+const drop=document.getElementById('drop');
+const font=document.getElementById('font');
+let dark=false,rid=0;
+marked.setOptions({breaks:true,gfm:true});
+function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function setStatus(msg){const t=editor.value,w=t.trim()?t.trim().split(/\s+/).length:0,l=t?t.split('\n').length:0;statusBar.textContent='字符 '+t.length+' · 词约 '+w+' · 行 '+l+(msg?' · '+msg:'');}
+function parseMd(t){return typeof marked.parse==='function'?marked.parse(t):marked(t);}
+function renderMermaid(){if(typeof mermaid==='undefined')return;const id=++rid;mermaid.initialize({startOnLoad:false,securityLevel:'loose',theme:dark?'dark':'default'});preview.querySelectorAll('pre code.language-mermaid').forEach(function(node,i){const pre=node.closest('pre');const src=node.textContent.trim();if(!pre||!src)return;const box=document.createElement('div');box.className='mermaid-box';pre.replaceWith(box);mermaid.render('m-'+id+'-'+i,src).then(function(r){if(id===rid&&box.isConnected)box.innerHTML=r.svg;}).catch(function(e){box.innerHTML='<div>Mermaid 渲染失败：'+esc(e&&e.message?e.message:'语法错误')+'</div>';});});}
+function update(msg){try{preview.innerHTML=DOMPurify.sanitize(parseMd(editor.value),{USE_PROFILES:{html:true}});renderMermaid();}catch(e){preview.innerHTML='<p>预览失败：'+esc(e&&e.message?e.message:String(e))+'</p>';}setStatus(msg||'');}
+function wrap(token){const s=editor.selectionStart,e=editor.selectionEnd,v=editor.value,m=v.slice(s,e);editor.value=v.slice(0,s)+token+m+token+v.slice(e);editor.focus();editor.selectionStart=s+token.length;editor.selectionEnd=e+token.length;update('已插入格式');}
+function line(prefix){const p=editor.selectionStart,v=editor.value,ls=v.lastIndexOf('\n',p-1)+1;editor.value=v.slice(0,ls)+prefix+v.slice(ls);editor.focus();editor.selectionStart=ls+prefix.length;editor.selectionEnd=ls+prefix.length;update('已插入格式');}
+function down(name,type,text){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:type}));a.download=name;document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(function(){URL.revokeObjectURL(a.href);},300);}
+function exportHtml(){const html=['<!DOCTYPE html>','<html lang="zh-CN">','<head>','<meta charset="UTF-8">','<meta name="viewport" content="width=device-width, initial-scale=1.0">','<title>Markdown导出</title>','<style>body{font-family:"Microsoft YaHei",sans-serif;line-height:1.8;margin:32px;color:#111827}pre{padding:14px;border-radius:10px;overflow:auto;background:#0f172a;color:#e2e8f0}code{padding:2px 6px;border-radius:6px;background:#eef2ff;font-family:Consolas,monospace}pre code{padding:0;background:transparent;color:inherit}blockquote{margin:1em 0;padding-left:12px;border-left:4px solid #cbd5e1;color:#475569}table{width:100%;border-collapse:collapse}th,td{border:1px solid #cbd5e1;padding:8px;text-align:left}</style>','</head>','<body>',preview.innerHTML,'</body>','</html>'].join('\n');down('document.html','text/html;charset=utf-8',html);setStatus('已导出 HTML');}
+function readFile(f){if(!f)return;if(f.size>10*1024*1024){setStatus('文件超过 10MB');return;}const r=new FileReader();r.onload=function(e){editor.value=e.target.result;update('已载入：'+f.name);};r.onerror=function(){setStatus('文件读取失败');};r.readAsText(f);}
+editor.addEventListener('input',function(){update('');});
+editor.addEventListener('keydown',function(e){const mod=e.ctrlKey||e.metaKey;if(!mod)return;if(e.key==='b'){e.preventDefault();wrap('**');}else if(e.key==='i'){e.preventDefault();wrap('*');}else if(e.key==='s'){e.preventDefault();down('document.md','text/markdown;charset=utf-8',editor.value);setStatus('已保存 MD');}});
+font.addEventListener('change',function(){editor.style.fontSize=font.value+'px';preview.style.fontSize=font.value+'px';});
+bar.addEventListener('click',function(e){const btn=e.target.closest('button');if(!btn)return;const a=btn.getAttribute('data-a'),w=btn.getAttribute('data-w'),l=btn.getAttribute('data-l');if(w){wrap(w);return;}if(l){line(l);return;}if(a==='new'){if(!editor.value.trim()||window.confirm('当前内容未保存，确定清空？')){editor.value='';update('已新建空白文档');}}else if(a==='open'){file.click();}else if(a==='md'){down('document.md','text/markdown;charset=utf-8',editor.value);setStatus('已保存 MD');}else if(a==='html'){exportHtml();}else if(a==='theme'){dark=!dark;app.classList.toggle('dark',dark);update('已切换主题');}});
+file.addEventListener('change',function(e){readFile(e.target.files[0]);file.value='';});
+drop.addEventListener('dragover',function(e){e.preventDefault();drop.classList.add('drag');});
+drop.addEventListener('dragleave',function(e){e.preventDefault();drop.classList.remove('drag');});
+drop.addEventListener('drop',function(e){e.preventDefault();drop.classList.remove('drag');readFile(e.dataTransfer.files[0]);});
+editor.value=['# Markdown 编辑工具','','这是一个单文件页面，不依赖项目内其他文件。','','## 功能','- 实时预览','- 上传 .md 文件','- 导出 MD / HTML','- Mermaid 图表预览','','```mermaid','flowchart TD','  A[开始] --> B[输入 Markdown]','  B --> C[实时预览]','  C --> D[导出文件]','```'].join('\n');
+update('当前页面已内置全部逻辑');
+</script>
+</body>
+</html>
