@@ -20,6 +20,11 @@ class MarkdownEditor {
     this.splitRange = null;
     this.splitValueLabel = null;
     this.fontSelect = null;
+    // 撤销历史相关
+    this.history = [];
+    this.historyIndex = -1;
+    this.historyLimit = 50;
+    this.isUndoing = false;
   }
 
   render() {
@@ -27,6 +32,12 @@ class MarkdownEditor {
       <div class="markdown-editor">
         <div class="markdown-editor__header">
           <div class="markdown-editor__controls">
+            <button type="button" class="btn btn--outline" id="mdBackBtn">
+              <svg viewBox="0 0 24 24" class="btn__icon" aria-hidden="true">
+                <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+              </svg>
+              返回
+            </button>
             <button type="button" class="btn btn--outline" id="mdNewFile">新建</button>
             <button type="button" class="btn btn--primary" id="uploadMdFile">
               <svg viewBox="0 0 24 24" class="btn__icon" aria-hidden="true">
@@ -97,6 +108,7 @@ class MarkdownEditor {
     this.previewElement = document.getElementById('markdownPreview');
     this.fileInput = document.getElementById('mdFileInput');
     this.uploadBtn = document.getElementById('uploadMdFile');
+    this.backBtn = document.getElementById('mdBackBtn');
     this.newFileBtn = document.getElementById('mdNewFile');
     this.saveMdBtn = document.getElementById('saveMdBtn');
     this.exportHtmlBtn = document.getElementById('exportHtml');
@@ -120,7 +132,14 @@ class MarkdownEditor {
 
   bindEvents() {
     this.editorElement.addEventListener('input', () => {
+      if (!this.isUndoing) {
+        this.saveHistory();
+      }
       this.updatePreview();
+    });
+
+    this.backBtn.addEventListener('click', () => {
+      this.goBack();
     });
 
     this.newFileBtn.addEventListener('click', () => {
@@ -191,6 +210,12 @@ class MarkdownEditor {
       } else if (e.key === 's') {
         e.preventDefault();
         this.exportMarkdown();
+      } else if (e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        this.undo();
+      } else if (e.key === 'y' || (e.key === 'z' && e.shiftKey)) {
+        e.preventDefault();
+        this.redo();
       }
     });
   }
@@ -228,6 +253,7 @@ class MarkdownEditor {
   }
 
   applyToolbarAction(action) {
+    this.saveHistory();
     switch (action) {
       case 'bold':
         this.wrapSelection('**', '**');
@@ -289,6 +315,7 @@ class MarkdownEditor {
     }
     this.editorElement.value = '';
     this.updatePreview();
+    this.saveHistory();
     this.setStatusMessage('已新建空白文档');
   }
 
@@ -334,7 +361,27 @@ class MarkdownEditor {
   loadDefaultContent() {
     this.editorElement.value = '';
     this.updatePreview();
+    this.saveHistory();
     this.setStatusMessage('就绪。支持点击或拖拽上传，最大 10MB。');
+  }
+
+  saveHistory() {
+    const content = this.editorElement.value;
+    const selectionStart = this.editorElement.selectionStart;
+    const selectionEnd = this.editorElement.selectionEnd;
+    
+    // 移除当前索引之后的历史记录
+    this.history = this.history.slice(0, this.historyIndex + 1);
+    
+    // 添加新的历史记录
+    this.history.push({ content, selectionStart, selectionEnd, timestamp: Date.now() });
+    
+    // 限制历史记录数量
+    if (this.history.length > this.historyLimit) {
+      this.history.shift();
+    } else {
+      this.historyIndex++;
+    }
   }
 
   setStatusMessage(text) {
@@ -486,6 +533,7 @@ class MarkdownEditor {
     reader.onload = (e) => {
       this.editorElement.value = e.target.result;
       this.updatePreview();
+      this.saveHistory();
       this.setStatusMessage(`已载入：${file.name}`);
     };
     reader.onerror = () => {
@@ -552,6 +600,34 @@ class MarkdownEditor {
     URL.revokeObjectURL(url);
   }
 
+  undo() {
+    if (this.historyIndex > 0) {
+      this.isUndoing = true;
+      this.historyIndex--;
+      const historyItem = this.history[this.historyIndex];
+      this.editorElement.value = historyItem.content;
+      this.editorElement.selectionStart = historyItem.selectionStart;
+      this.editorElement.selectionEnd = historyItem.selectionEnd;
+      this.updatePreview();
+      this.setStatusMessage('已撤销上一步操作');
+      this.isUndoing = false;
+    }
+  }
+
+  redo() {
+    if (this.historyIndex < this.history.length - 1) {
+      this.isUndoing = true;
+      this.historyIndex++;
+      const historyItem = this.history[this.historyIndex];
+      this.editorElement.value = historyItem.content;
+      this.editorElement.selectionStart = historyItem.selectionStart;
+      this.editorElement.selectionEnd = historyItem.selectionEnd;
+      this.updatePreview();
+      this.setStatusMessage('已重做操作');
+      this.isUndoing = false;
+    }
+  }
+
   toggleTheme() {
     this.isDarkTheme = !this.isDarkTheme;
     const root = this.rootElement || document.querySelector('.markdown-editor');
@@ -562,6 +638,29 @@ class MarkdownEditor {
       root.classList.add('markdown-editor--dark');
     } else {
       root.classList.remove('markdown-editor--dark');
+    }
+  }
+
+  goBack() {
+    // 从DOM中移除Markdown编辑器元素
+    if (this.rootElement && this.rootElement.parentNode) {
+      this.rootElement.parentNode.removeChild(this.rootElement);
+    }
+    
+    // 清理所有可能的markdown-editor元素
+    const allEditors = document.querySelectorAll('.markdown-editor');
+    allEditors.forEach(editor => {
+      if (editor.parentNode) {
+        editor.parentNode.removeChild(editor);
+      }
+    });
+    
+    // 尝试显示工具目录
+    if (typeof window.WebToolsApp !== 'undefined' && window.WebToolsApp.instance) {
+      window.WebToolsApp.instance.showToolList();
+    } else {
+      // 如果WebToolsApp不可用，尝试返回上一页
+      window.history.back();
     }
   }
 }
