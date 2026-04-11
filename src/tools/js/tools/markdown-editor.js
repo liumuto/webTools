@@ -21,6 +21,8 @@ class MarkdownEditor {
     this.splitRange = null;
     this.splitValueLabel = null;
     this.fontSelect = null;
+    this.previewModeBtn = null;
+    this.isPreviewOnly = false;
     // 撤销历史相关
     this.history = [];
     this.historyIndex = -1;
@@ -60,6 +62,7 @@ class MarkdownEditor {
               </svg>
               导出 HTML
             </button>
+            <button type="button" class="btn btn--outline" id="previewModeToggle">预览模式</button>
             <button type="button" class="btn btn--outline" id="themeToggle">
               <svg viewBox="0 0 24 24" class="btn__icon" aria-hidden="true">
                 <path d="M20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69zM12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6zm0-10c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z"/>
@@ -113,6 +116,7 @@ class MarkdownEditor {
     this.newFileBtn = document.getElementById('mdNewFile');
     this.saveMdBtn = document.getElementById('saveMdBtn');
     this.exportHtmlBtn = document.getElementById('exportHtml');
+    this.previewModeBtn = document.getElementById('previewModeToggle');
     this.themeToggle = document.getElementById('themeToggle');
     this.toolbar = document.getElementById('mdToolbar');
     this.dropZone = document.getElementById('mdDropZone');
@@ -128,6 +132,7 @@ class MarkdownEditor {
 
     this.loadDefaultContent();
     this.applySplitRatio(Number(this.splitRange.value));
+    this.applyPreviewMode();
     this.updateStatusBar();
   }
 
@@ -165,6 +170,10 @@ class MarkdownEditor {
 
     this.exportHtmlBtn.addEventListener('click', () => {
       this.exportHtml();
+    });
+
+    this.previewModeBtn.addEventListener('click', () => {
+      this.togglePreviewMode();
     });
 
     this.themeToggle.addEventListener('click', () => {
@@ -387,6 +396,24 @@ class MarkdownEditor {
 
   setStatusMessage(text) {
     this.updateStatusBar(text);
+  }
+
+  applyPreviewMode() {
+    if (!this.rootElement) {
+      return;
+    }
+    this.rootElement.classList.toggle('markdown-editor--preview-only', this.isPreviewOnly);
+    if (this.previewModeBtn) {
+      this.previewModeBtn.textContent = this.isPreviewOnly ? '退出预览' : '预览模式';
+      this.previewModeBtn.classList.toggle('btn--secondary', this.isPreviewOnly);
+      this.previewModeBtn.classList.toggle('btn--outline', !this.isPreviewOnly);
+    }
+  }
+
+  togglePreviewMode() {
+    this.isPreviewOnly = !this.isPreviewOnly;
+    this.applyPreviewMode();
+    this.updateStatusBar(this.isPreviewOnly ? '当前为预览模式' : '已退出预览模式');
   }
 
   updateStatusBar(optionalMessage) {

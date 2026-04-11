@@ -420,7 +420,57 @@
   border: 0;
 }
 
+.markdown-editor--preview-only {
+  overflow: auto;
+}
+
+.markdown-editor--preview-only .markdown-editor__header {
+  padding-bottom: 16px;
+}
+
+.markdown-editor--preview-only #mdNewFile,
+.markdown-editor--preview-only #uploadMdFile,
+.markdown-editor--preview-only #saveMdBtn,
+.markdown-editor--preview-only #exportHtml,
+.markdown-editor--preview-only #themeToggle,
+.markdown-editor--preview-only .markdown-editor__toolbar,
+.markdown-editor--preview-only .markdown-editor__options,
+.markdown-editor--preview-only .markdown-editor__status {
+  display: none;
+}
+
+.markdown-editor--preview-only .markdown-editor__controls {
+  justify-content: space-between;
+}
+
+.markdown-editor--preview-only .markdown-editor__panel--editor {
+  display: none;
+}
+
+.markdown-editor--preview-only .markdown-editor__panel--preview {
+  flex: 1 1 100%;
+  overflow: visible;
+}
+
+.markdown-editor--preview-only .markdown-editor__body {
+  display: block;
+  overflow: visible;
+}
+
+.markdown-editor--preview-only .markdown-editor__preview {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
 @media (max-width: 768px) {
+  .markdown-editor--preview-only .markdown-editor__panel--editor {
+    display: none;
+  }
+
+  .markdown-editor--preview-only .markdown-editor__panel--preview {
+    flex: 1 1 100%;
+  }
+
   .markdown-editor__body {
     flex-direction: column;
   }
