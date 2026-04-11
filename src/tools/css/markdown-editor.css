@@ -464,3 +464,27 @@
 .markdown-editor--dark .markdown-editor__panel::-webkit-scrollbar-thumb:hover {
   background: #6c757d;
 }
+
+
+.markdown-editor__mermaid {
+  margin-bottom: 1em;
+  padding: 12px;
+  border-radius: 8px;
+  background-color: #ffffff;
+  overflow-x: auto;
+}
+
+.markdown-editor__mermaid svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+
+.markdown-editor--dark .markdown-editor__mermaid {
+  background-color: #2d2d2d;
+}
+
+.markdown-editor__error--mermaid {
+  margin-bottom: 0;
+}

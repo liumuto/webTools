@@ -11,6 +11,7 @@ class MarkdownEditor {
     this.exportHtmlBtn = null;
     this.isDarkTheme = false;
     this._markedOptionsApplied = false;
+    this._mermaidRequestId = 0;
     this.rootElement = null;
     this.editorPanel = null;
     this.previewPanel = null;
@@ -402,10 +403,12 @@ class MarkdownEditor {
 
   updatePreview() {
     const markdown = this.editorElement.value;
+    const requestId = ++this._mermaidRequestId;
     try {
       const rawHtml = this.parseMarkdown(markdown);
       this.previewElement.innerHTML = this.sanitizeHtml(rawHtml);
       this.highlightCode();
+      this.renderMermaidDiagrams(requestId);
     } catch (err) {
       console.error('Markdown preview error:', err);
       this.previewElement.innerHTML = this.formatPreviewError(err);
@@ -428,6 +431,9 @@ class MarkdownEditor {
     }
     marked.setOptions({
       highlight(code, lang) {
+        if (lang === 'mermaid') {
+          return code;
+        }
         if (typeof hljs !== 'undefined' && lang && hljs.getLanguage(lang)) {
           try {
             return hljs.highlight(code, { language: lang }).value;
@@ -463,17 +469,25 @@ class MarkdownEditor {
 
   parseMarkdownFallback(markdown) {
     let html = markdown
+      .replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
+        const languageClass = lang ? ` class="language-${lang}"` : '';
+        const safeCode = code
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
+        return `<pre><code${languageClass}>${safeCode}</code></pre>`;
+      })
       .replace(/^#{1}(.+$)/gm, '<h1>$1</h1>')
       .replace(/^#{2}(.+$)/gm, '<h2>$1</h2>')
       .replace(/^#{3}(.+$)/gm, '<h3>$1</h3>')
       .replace(/^#{4}(.+$)/gm, '<h4>$1</h4>')
       .replace(/^\s*\-\s+(.+$)/gm, '<li>$1</li>')
       .replace(/^\s*\d+\.\s+(.+$)/gm, '<li>$1</li>')
-      .replace(/```([\s\S]*?)```/g, '<pre><code class="hljs">$1</code></pre>')
       .replace(/`([^`]+)`/g, '<code>$1</code>')
       .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.+?)\*/g, '<em>$1</em>')
-      .replace(/\[([^\]]+)\]\(([^\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+      .replace(/\[([^\]]+)\]\(([^\)]+)\)/g,
+        '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
       .replace(/^>\s+(.+$)/gm, '<blockquote>$1</blockquote>')
       .replace(/\|(.+?)\|\n\|(.+?)\|\n((?:\|.+?\|\n)+)/g, (match, headers, separators, rows) => {
         const headerCells = headers.split('|').filter((cell) => cell.trim() !== '');
@@ -508,18 +522,71 @@ class MarkdownEditor {
   }
 
   highlightCode() {
+    const codeBlocks = this.previewElement.querySelectorAll('pre code');
     if (typeof hljs === 'undefined') {
-      this.previewElement.querySelectorAll('pre code').forEach((code) => {
-        code.classList.add('hljs');
+      codeBlocks.forEach((code) => {
+        if (!code.classList.contains('language-mermaid')) {
+          code.classList.add('hljs');
+        }
       });
       return;
     }
-    this.previewElement.querySelectorAll('pre code').forEach((code) => {
+    codeBlocks.forEach((code) => {
+      if (code.classList.contains('language-mermaid')) {
+        return;
+      }
       try {
         hljs.highlightElement(code);
       } catch (e) {
         code.classList.add('hljs');
       }
+    });
+  }
+
+  renderMermaidDiagrams(requestId) {
+    if (typeof mermaid === 'undefined') {
+      return;
+    }
+    this.ensureMermaidConfig();
+    const blocks = this.previewElement.querySelectorAll('pre code.language-mermaid');
+    blocks.forEach((block, index) => {
+      const source = block.textContent.trim();
+      const pre = block.closest('pre');
+      if (!pre || source === '') {
+        return;
+      }
+      const container = document.createElement('div');
+      container.className = 'markdown-editor__mermaid';
+      pre.replaceWith(container);
+      mermaid.render(`markdown-mermaid-${requestId}-${index}`, source)
+        .then(({ svg }) => {
+          if (requestId === this._mermaidRequestId && container.isConnected) {
+            container.innerHTML = svg;
+          }
+        })
+        .catch((error) => {
+          console.error('Mermaid渲染失败:', error);
+          if (requestId !== this._mermaidRequestId || !container.isConnected) {
+            return;
+          }
+          const message = error && error.message ? error.message : '语法错误';
+          const safeMessage = message
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+          container.innerHTML = `<div class="markdown-editor__error markdown-editor__error--mermaid">Mermaid 渲染失败：${safeMessage}</div>`;
+        });
+    });
+  }
+
+  ensureMermaidConfig() {
+    if (typeof mermaid === 'undefined') {
+      return;
+    }
+    mermaid.initialize({
+      startOnLoad: false,
+      securityLevel: 'loose',
+      theme: this.isDarkTheme ? 'dark' : 'default'
     });
   }
 
@@ -639,6 +706,7 @@ class MarkdownEditor {
     } else {
       root.classList.remove('markdown-editor--dark');
     }
+    this.updatePreview();
   }
 
   goBack() {
