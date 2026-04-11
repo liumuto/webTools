@@ -189,6 +189,8 @@
     <script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 </head>
 <body>
     <div class="app" id="app">
@@ -197,6 +199,7 @@
             <button type="button" class="btn" data-a="open">上传</button>
             <button type="button" class="btn" data-a="md">保存 MD</button>
             <button type="button" class="btn" data-a="html">导出 HTML</button>
+            <button type="button" class="btn" data-a="pdf">导出 PDF</button>
             <button type="button" class="btn" data-a="preview-mode">预览模式</button>
             <button type="button" class="btn" data-a="theme">切换主题</button>
             <button type="button" class="btn" data-w="**">加粗</button>
@@ -341,6 +344,156 @@
             setStatus('已导出 HTML');
         }
         
+        async function exportPdf() {
+            if (!window.jspdf || !window.jspdf.jsPDF) {
+                setStatus('PDF 依赖加载失败');
+                return;
+            }
+            if (typeof html2canvas === 'undefined') {
+                setStatus('截图依赖加载失败');
+                return;
+            }
+
+            const jsPDF = window.jspdf.jsPDF;
+            const previousPreviewMode = previewOnly;
+
+            if (!previewOnly) {
+                previewOnly = true;
+                applyPreviewMode();
+                update('');
+            }
+
+            await new Promise(function(resolve) {
+                window.setTimeout(resolve, 180);
+            });
+
+            const exportHost = document.createElement('div');
+            const exportPreview = document.createElement('div');
+            const previewRect = preview.getBoundingClientRect();
+            const exportWidth = Math.max(720, Math.ceil(previewRect.width || preview.scrollWidth || 800));
+
+            exportHost.style.position = 'fixed';
+            exportHost.style.left = '-100000px';
+            exportHost.style.top = '0';
+            exportHost.style.width = exportWidth + 'px';
+            exportHost.style.padding = '0';
+            exportHost.style.margin = '0';
+            exportHost.style.background = dark ? '#0f172a' : '#ffffff';
+            exportHost.style.zIndex = '-1';
+
+            exportPreview.className = preview.className;
+            exportPreview.style.width = exportWidth + 'px';
+            exportPreview.style.maxWidth = 'none';
+            exportPreview.style.margin = '0';
+            exportPreview.style.padding = '0';
+            exportPreview.style.background = dark ? '#0f172a' : '#ffffff';
+            exportPreview.innerHTML = preview.innerHTML;
+            exportHost.appendChild(exportPreview);
+            document.body.appendChild(exportHost);
+
+            try {
+                const canvas = await html2canvas(exportPreview, {
+                    backgroundColor: dark ? '#0f172a' : '#ffffff',
+                    scale: 2,
+                    useCORS: true,
+                    logging: false,
+                    scrollX: 0,
+                    scrollY: 0,
+                    windowWidth: exportWidth,
+                    windowHeight: exportPreview.scrollHeight
+                });
+
+                const pdf = new jsPDF({
+                    orientation: 'p',
+                    unit: 'pt',
+                    format: 'a4'
+                });
+
+                const pageWidth = pdf.internal.pageSize.getWidth();
+                const pageHeight = pdf.internal.pageSize.getHeight();
+                const margin = 24;
+                const usableWidth = pageWidth - margin * 2;
+                const usableHeight = pageHeight - margin * 2;
+                const pageHeightCss = usableHeight * exportWidth / usableWidth;
+                const scaleRatio = canvas.width / exportWidth;
+                const blockNodes = Array.from(exportPreview.children);
+                const pageBreaks = [];
+                let startCss = 0;
+                const totalHeightCss = exportPreview.scrollHeight;
+
+                while (startCss < totalHeightCss - 1) {
+                    const desiredEndCss = Math.min(startCss + pageHeightCss, totalHeightCss);
+                    let breakCss = desiredEndCss;
+
+                    for (let i = 0; i < blockNodes.length; i += 1) {
+                        const node = blockNodes[i];
+                        const nodeTop = node.offsetTop;
+                        const nodeBottom = nodeTop + node.offsetHeight;
+                        if (nodeBottom <= desiredEndCss && nodeBottom > startCss + 40) {
+                            breakCss = nodeBottom;
+                        }
+                        if (nodeTop >= desiredEndCss) {
+                            break;
+                        }
+                    }
+
+                    if (breakCss <= startCss + 20) {
+                        breakCss = desiredEndCss;
+                    }
+
+                    pageBreaks.push({
+                        start: startCss,
+                        end: breakCss
+                    });
+                    startCss = breakCss;
+                }
+
+                pageBreaks.forEach(function(section, index) {
+                    if (index > 0) {
+                        pdf.addPage();
+                    }
+
+                    const sliceStartPx = Math.floor(section.start * scaleRatio);
+                    const sliceHeightPx = Math.max(1, Math.ceil((section.end - section.start) * scaleRatio));
+                    const pageCanvas = document.createElement('canvas');
+                    const pageContext = pageCanvas.getContext('2d');
+                    pageCanvas.width = canvas.width;
+                    pageCanvas.height = sliceHeightPx;
+
+                    pageContext.fillStyle = dark ? '#0f172a' : '#ffffff';
+                    pageContext.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+                    pageContext.drawImage(
+                        canvas,
+                        0,
+                        sliceStartPx,
+                        canvas.width,
+                        sliceHeightPx,
+                        0,
+                        0,
+                        canvas.width,
+                        sliceHeightPx
+                    );
+
+                    const pageImageHeight = sliceHeightPx * usableWidth / canvas.width;
+                    const pageImage = pageCanvas.toDataURL('image/png');
+                    pdf.addImage(pageImage, 'PNG', margin, margin, usableWidth, pageImageHeight, undefined, 'FAST');
+                });
+
+                pdf.save('document.pdf');
+                setStatus('已导出预览区 PDF');
+            } catch (error) {
+                console.error(error);
+                setStatus('PDF 导出失败');
+            } finally {
+                document.body.removeChild(exportHost);
+                if (!previousPreviewMode) {
+                    previewOnly = false;
+                    applyPreviewMode();
+                    update('');
+                }
+            }
+        }
+        
         function readFile(f) {
             if (!f) return;
             if (f.size > 10 * 1024 * 1024) {
@@ -409,6 +562,8 @@
                 setStatus('已保存 MD');
             } else if (a === 'html') {
                 exportHtml();
+            } else if (a === 'pdf') {
+                exportPdf();
             } else if (a === 'preview-mode') {
                 previewOnly = !previewOnly;
                 applyPreviewMode();
@@ -449,7 +604,7 @@
             '## 功能',
             '- 实时预览',
             '- 上传 .md 文件',
-            '- 导出 MD / HTML',
+            '- 导出 MD / HTML / PDF',
             '- Mermaid 图表预览',
             '- 单独预览模式',
             '',
