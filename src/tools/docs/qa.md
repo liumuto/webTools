@@ -1304,41 +1304,103 @@
 ### 🚀 后续优化
 - 可在导出 HTML 时一并内嵌 Mermaid 渲染支持，保证导出文件也能展示图表。
 
+---
+
+## 📅 2026-04-11 - caveman 安装失败网络问题修复
+
+### 🔍 问题描述
+- **背景**：用户执行 `npx skills add JuliusBrussee/caveman -a cursor` 安装 `caveman` skill。
+- **现象**：安装过程中仓库克隆失败，出现 GitHub 连接超时或空响应错误。
+- **根因**：本机可解析 `github.com`，但直连 `443` 端口失败；同时系统已存在可用的本地代理 `127.0.0.1:7897`，但 `git` 与 `npm` 未统一使用该代理进行拉取。
+
+### 💡 解决思路
+- 先检查 `git`、环境变量、系统代理与本地代理端口状态。
+- 确认本地代理可用后，为 `git` 和 `npm` 补充 `http/https proxy` 配置。
+- 在安装命令执行时同时注入 `HTTP_PROXY` 与 `HTTPS_PROXY` 环境变量，确保 `npx skills` 拉取 GitHub 仓库时走代理。
+
+### 🔧 排查结果
+- **Git 版本**：`git version 2.11.0.windows.1`
+- **GitHub 连通性**：`github.com` DNS 解析正常，但直连 `443` 失败。
+- **本地代理**：`127.0.0.1:7897` 端口可连通。
+- **系统代理线索**：系统代理解析结果指向 `http://127.0.0.1:7897/`。
+
+### 🔧 修复操作
+- 设置 Git 全局代理：
+  - `git config --global http.proxy http://127.0.0.1:7897`
+  - `git config --global https.proxy http://127.0.0.1:7897`
+- 设置 npm 代理：
+  - `npm config set proxy http://127.0.0.1:7897`
+  - `npm config set https-proxy http://127.0.0.1:7897`
+- 使用代理环境变量重试安装：
+  - `HTTP_PROXY=http://127.0.0.1:7897`
+  - `HTTPS_PROXY=http://127.0.0.1:7897`
+
+### ✅ 结果验证
+- 安装已成功完成，共安装 5 个 skills：
+  - `caveman`
+  - `caveman-compress`
+  - `caveman-commit`
+  - `caveman-help`
+  - `caveman-review`
+- 安装目标为 Cursor，本地已成功复制到 `.agents/skills/` 对应目录。
+
+### ⚠️ 注意事项
+- 当前 `git` 与 `npm` 已保留全局代理配置；如果后续不再使用本地代理，需手动取消相关配置。
+- `skills` 输出中提示这些 skills 具有完整 agent 权限，使用前应自行审阅内容。
+
+### 🚀 后续优化
+- 可考虑把代理配置同步到常用终端启动脚本，避免后续每次临时注入环境变量。
+- 如果本地代理端口会变化，可进一步改成按实际代理工具自动检测。
 
 ---
 
-## ?? 2026-04-11 - Markdown ????? Mermaid ????
+## 📅 2026-04-12 - Cursor skills 识别验证与常用 skills 补充安装
 
-### ?? ????
-- **??**?????? Markdown ?????????? Mermaid ???
-- **??**???????? Mermaid ?????? ` ```mermaid ` ????????????????????
-- **??**??????? Mermaid ?????? `mermaid.render()` ?????
+### 🔍 问题描述
+- **背景**：用户希望继续完成三件事：验证 Cursor 是否已识别已安装的 skills、补充安装常用 skills、整理一个可复用的 Windows 代理脚本。
+- **目标**：确认 `caveman` 系列已在当前项目内被 Cursor 识别，并补齐常见辅助型 skills，同时沉淀代理运维脚本便于后续重复使用。
 
-### ?? ????
-- ? Markdown ??????? `language-mermaid` ????
-- ?? Mermaid ????????????????????
-- ? Mermaid ???????????????????????
+### 💡 解决思路
+- 先通过 `skills list` 的 JSON 输出核实 Cursor 当前可识别的 skills。
+- 再从公开 skills 仓库中筛选通用度较高、风险较低的辅助 skills 进行安装。
+- 最后在项目内新增批处理脚本，统一封装 Git/npm 代理设置、清理与状态查看能力。
 
-### ?? ????
-- **????**?`src/tools/js/tools/markdown-editor.js`
-  - `updatePreview()` ?? Mermaid ?????
-  - `ensureMarkedOptions()` ?? Mermaid ??????
-  - `parseMarkdownFallback()` ???? fenced code block ??????
-  - ?? `renderMermaidDiagrams()` ? `ensureMermaidConfig()`?
-  - `toggleTheme()` ????? Mermaid ?????
-- **????**?`src/tools/css/markdown-editor.css`
-  - ?? `.markdown-editor__mermaid` ??????????????
+### 🔧 验证结果
+- 使用 `npx skills ls -a cursor --json` 验证后，以下 skills 已被 Cursor 正常识别：
+  - `caveman`
+  - `caveman-commit`
+  - `caveman-compress`
+  - `caveman-help`
+  - `caveman-review`
+- 说明当前 `.agents/skills/` 下的项目级安装结果已生效。
 
-### ? ????
-- ???????????????? Mermaid ???
-  ```markdown
-  ```mermaid
-  flowchart TD
-    A[??] --> B[????]
-    B --> C[????]
-  ```
-  ```
-- ??????????????????????
+### 🔧 新增安装内容
+- 新增安装了 3 个常用 skills：
+  - `git-commit`
+  - `documentation-writer`
+  - `prd`
+- 安装目标均为 Cursor，且已成功复制到项目目录 `.agents/skills/`。
+- 这些 skills 来自 `github/awesome-copilot` 仓库，安装输出中显示为低风险。
 
-### ?? ????
-- ???? HTML ????? Mermaid ???????????????????????
+### 🧰 代理脚本整理
+- **新增文件**：`others/dev-proxy/proxy-setup.bat`
+- **支持能力**：
+  - `set [host] [port]`：设置 Git、npm 与当前终端代理
+  - `unset`：清理 Git、npm 与当前终端代理
+  - `status`：查看当前代理配置状态
+- **默认代理地址**：`127.0.0.1:7897`
+
+### ✅ 使用示例
+- 设置默认代理：`proxy-setup.bat set`
+- 指定代理地址：`proxy-setup.bat set 127.0.0.1 7897`
+- 查看状态：`proxy-setup.bat status`
+- 清理代理：`proxy-setup.bat unset`
+
+### ⚠️ 注意事项
+- `proxy-setup.bat` 中设置的环境变量只对当前执行该脚本的终端会话生效；Git 与 npm 的全局配置会持久保留。
+- 新安装的 skills 同样具有完整 agent 权限，建议按需使用，并在正式高权限操作前先阅读对应 `SKILL.md`。
+
+### 🚀 后续优化
+- 可继续补充一个 PowerShell 版本脚本，支持更友好的参数解析与错误提示。
+- 如果后续常用 skill 范围更明确，可再按代码审查、文档生成、需求整理等场景做分类安装。
+
