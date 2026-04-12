@@ -1520,3 +1520,44 @@
 - 可继续补充更细的测试清单型 skill，例如工具页边界场景测试模板。
 - 如后续项目目录继续扩展，可把规则按“前端规范 / 协作规范 / 文档规范”拆成多个规则文件。
 
+---
+
+## 📅 2026-04-12 - 补充 Android 开发相关 skills 与 rules
+
+### 🔍 问题描述
+- **背景**：用户补充说明本职是 Android 应用开发，希望在现有项目级协作能力基础上，再增加一组更贴近 Android 日常开发的 skills 与 rules。
+- **目标**：覆盖 Android 调试、UI 状态评审、性能检查、架构边界、发布检查、测试规划等常见工作场景，并在统一规则文件中加入 Android 相关开发约束。
+
+### 💡 解决思路
+- 先复用现有 `.agents/skills/` 目录结构，为 Android 场景新增独立 skill 目录，保持和前端 skills 同一层级。
+- skills 设计上优先覆盖最常见的六类高频任务：调试、状态评审、性能、架构约束、发布检查、测试规划。
+- rules 侧不单独新建文件，而是在现有 `.cursor/rules/rules.mdc` 中补充 Android 开发规范、验证规则、兼容性和可访问性要求，避免规则入口分散。
+
+### 🔧 代码变更
+- **新增目录与文件**：
+  - `.agents/skills/android-debugger/SKILL.md`
+  - `.agents/skills/android-ui-state-review/SKILL.md`
+  - `.agents/skills/android-performance-checker/SKILL.md`
+  - `.agents/skills/android-architecture-guard/SKILL.md`
+  - `.agents/skills/android-release-checker/SKILL.md`
+  - `.agents/skills/android-test-planner/SKILL.md`
+- **修改文件**：
+  - `.cursor/rules/rules.mdc`
+- **实现内容**：
+  - 新增 Android 生命周期、状态流、协程、发布、测试相关 skills。
+  - 规则文件中补充 Kotlin 优先、生命周期根因定位、线程边界、状态恢复、权限与发布配置边界等要求。
+  - 在验证规则中加入 Android 设备 / 系统版本覆盖说明，以及旋转屏、前后台、权限拒绝、弱网等场景要求。
+
+### ✅ 测试验证
+- **验证方法**：检查 6 个 Android skill 目录与 `SKILL.md` 是否成功创建，并重新读取 `rules.mdc` 确认 Android 规范段落已写入。
+- **验证结果**：Android 相关 skills 已全部写入 `.agents/skills/`；`rules.mdc` 已补充 Android 开发规范、验证规则和兼容性要求。
+- **说明**：本次仍为协作规范与说明文件扩展，未涉及 Android 业务代码运行验证。
+
+### ⚠️ 注意事项
+- 当前项目本身仍是原生 Web 工具项目，因此 Android 相关内容主要服务于通用开发协作，不会改变现有前端目录结构。
+- Android 规则采用“补充型”写法，与原有前端规则共存；后续若 Android 相关工作量继续增大，可再拆分为独立规则文件。
+
+### 🚀 后续优化
+- 可继续补充更偏工程化的 Android skills，例如 `android-code-reviewer`、`android-crash-analyzer`、`android-gradle-config-checker`。
+- 若后续你希望更贴合个人开发习惯，我也可以再帮你补一版“Jetpack Compose / MVVM / Room / Retrofit / Hilt 定制规则集”。
+
