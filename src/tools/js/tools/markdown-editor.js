@@ -704,84 +704,112 @@ class MarkdownEditor {
     }
 
     const previousPreviewMode = this.isPreviewOnly;
+
     if (!this.isPreviewOnly) {
       this.isPreviewOnly = true;
       this.applyPreviewMode();
-      this.updateStatusBar('准备导出 PDF');
+      this.updatePreview();
     }
 
     await new Promise((resolve) => {
-      window.setTimeout(resolve, 220);
+      window.setTimeout(resolve, 180);
     });
 
     const exportHost = document.createElement('div');
     const exportPreview = document.createElement('div');
     const previewRect = this.previewElement.getBoundingClientRect();
-    const exportWidth = Math.max(
-      900,
-      Math.ceil(previewRect.width || this.previewElement.scrollWidth || 900)
-    );
-    const backgroundColor = this.isDarkTheme ? '#1e1e1e' : '#ffffff';
+    const exportWidth = Math.max(720, Math.ceil(previewRect.width || this.previewElement.scrollWidth || 800));
 
-    exportHost.className = 'markdown-editor__pdf-host';
     exportHost.style.position = 'fixed';
     exportHost.style.left = '-100000px';
     exportHost.style.top = '0';
     exportHost.style.width = `${exportWidth}px`;
-    exportHost.style.padding = '32px';
+    exportHost.style.padding = '0';
     exportHost.style.margin = '0';
-    exportHost.style.background = backgroundColor;
+    exportHost.style.background = this.isDarkTheme ? '#0f172a' : '#ffffff';
     exportHost.style.zIndex = '-1';
 
     exportPreview.className = this.previewElement.className;
-    exportPreview.style.width = '100%';
+    exportPreview.style.width = `${exportWidth}px`;
     exportPreview.style.maxWidth = 'none';
     exportPreview.style.margin = '0';
     exportPreview.style.padding = '0';
-    exportPreview.style.background = backgroundColor;
+    exportPreview.style.background = this.isDarkTheme ? '#0f172a' : '#ffffff';
     exportPreview.innerHTML = this.previewElement.innerHTML;
-    this.decorateExportPreview(exportPreview);
-
     exportHost.appendChild(exportPreview);
     document.body.appendChild(exportHost);
 
     try {
       const canvas = await html2canvas(exportPreview, {
-        backgroundColor,
+        backgroundColor: this.isDarkTheme ? '#0f172a' : '#ffffff',
         scale: 2,
         useCORS: true,
         logging: false,
         scrollX: 0,
         scrollY: 0,
-        windowWidth: exportHost.scrollWidth,
-        windowHeight: exportHost.scrollHeight
+        windowWidth: exportWidth,
+        windowHeight: exportPreview.scrollHeight
       });
 
       const jsPDF = window.jspdf.jsPDF;
-      const pdf = new jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' });
+      const pdf = new jsPDF({
+        orientation: 'p',
+        unit: 'pt',
+        format: 'a4'
+      });
+
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
       const margin = 24;
       const usableWidth = pageWidth - margin * 2;
       const usableHeight = pageHeight - margin * 2;
-      const contentWidthCss = exportPreview.getBoundingClientRect().width;
-      const scaleRatio = canvas.width / contentWidthCss;
-      const pageHeightCss = usableHeight * contentWidthCss / usableWidth;
-      const breakpoints = this.computePdfBreakpoints(exportPreview, pageHeightCss);
+      const pageHeightCss = usableHeight * exportWidth / usableWidth;
+      const scaleRatio = canvas.width / exportWidth;
+      const blockNodes = Array.from(exportPreview.children);
+      const pageBreaks = [];
+      let startCss = 0;
+      const totalHeightCss = exportPreview.scrollHeight;
 
-      breakpoints.forEach((section, index) => {
+      while (startCss < totalHeightCss - 1) {
+        const desiredEndCss = Math.min(startCss + pageHeightCss, totalHeightCss);
+        let breakCss = desiredEndCss;
+
+        for (let i = 0; i < blockNodes.length; i += 1) {
+          const node = blockNodes[i];
+          const nodeTop = node.offsetTop;
+          const nodeBottom = nodeTop + node.offsetHeight;
+          if (nodeBottom <= desiredEndCss && nodeBottom > startCss + 40) {
+            breakCss = nodeBottom;
+          }
+          if (nodeTop >= desiredEndCss) {
+            break;
+          }
+        }
+
+        if (breakCss <= startCss + 20) {
+          breakCss = desiredEndCss;
+        }
+
+        pageBreaks.push({
+          start: startCss,
+          end: breakCss
+        });
+        startCss = breakCss;
+      }
+
+      pageBreaks.forEach((section, index) => {
         if (index > 0) {
           pdf.addPage();
         }
-        const sliceStartPx = Math.max(0, Math.floor(section.start * scaleRatio));
+
+        const sliceStartPx = Math.floor(section.start * scaleRatio);
         const sliceHeightPx = Math.max(1, Math.ceil((section.end - section.start) * scaleRatio));
         const pageCanvas = document.createElement('canvas');
         const pageContext = pageCanvas.getContext('2d');
-
         pageCanvas.width = canvas.width;
         pageCanvas.height = sliceHeightPx;
 
-        pageContext.fillStyle = backgroundColor;
+        pageContext.fillStyle = this.isDarkTheme ? '#0f172a' : '#ffffff';
         pageContext.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
         pageContext.drawImage(
           canvas,
@@ -803,7 +831,7 @@ class MarkdownEditor {
       pdf.save('document.pdf');
       this.setStatusMessage('已导出预览区 PDF');
     } catch (error) {
-      console.error('PDF 导出失败:', error);
+      console.error(error);
       this.setStatusMessage('PDF 导出失败');
     } finally {
       if (exportHost.isConnected) {
@@ -812,8 +840,8 @@ class MarkdownEditor {
       if (!previousPreviewMode) {
         this.isPreviewOnly = false;
         this.applyPreviewMode();
+        this.updatePreview();
       }
-      this.updateStatusBar();
     }
   }
 
