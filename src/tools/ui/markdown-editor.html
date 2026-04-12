@@ -15,9 +15,11 @@
             color: #1f2937
         }
         .app {
+            height: 100vh;
             min-height: 100vh;
             display: flex;
-            flex-direction: column
+            flex-direction: column;
+            overflow: hidden
         }
         .bar {
             display: flex;
@@ -57,11 +59,16 @@
         .pane--left {
             border-right: 1px solid #dbe3ee
         }
+        .app--preview {
+            overflow: hidden
+        }
         .app--preview .pane--left {
             display: none
         }
         .app--preview .pane {
-            width: 100%
+            width: 100%;
+            height: 100%;
+            overflow: auto
         }
         .app--preview .preview {
             max-width: 1000px;
@@ -154,6 +161,15 @@
         .toc__link:hover {
             color: #2563eb;
             background: #eff6ff
+        }
+        .toc__link--active {
+            color: #1d4ed8;
+            background: #dbeafe;
+            font-weight: 700
+        }
+        .toc__link:focus-visible {
+            outline: 2px solid #2563eb;
+            outline-offset: 2px
         }
         .preview-heading {
             scroll-margin-top: 20px
@@ -261,6 +277,10 @@
             color: #93c5fd;
             background: #1e293b
         }
+        .dark .toc__link--active {
+            color: #bfdbfe;
+            background: #1d4ed8
+        }
         @media (max-width: 1024px) {
             .preview-shell {
                 flex-direction: column
@@ -345,7 +365,7 @@
         const drop = document.getElementById('drop');
         const font = document.getElementById('font');
         const toc = document.getElementById('toc');
-        let dark = false, rid = 0, previewOnly = false;
+        let dark = false, rid = 0, previewOnly = false, activeHeadingId = '';
         
         marked.setOptions({ breaks: true, gfm: true });
         
@@ -363,6 +383,7 @@
         
         function applyPreviewMode() {
             app.classList.toggle('app--preview', previewOnly);
+            updateActiveHeading();
         }
         
         function parseMd(t) {
@@ -421,7 +442,64 @@
         }
 
         function getPreviewScrollContainer() {
-            return previewOnly ? app : preview.closest('.pane');
+            const pane = preview.closest('.pane');
+            return pane || app;
+        }
+
+        function setActiveTocLink(id) {
+            activeHeadingId = id || '';
+            toc.querySelectorAll('.toc__link').forEach(function(link) {
+                const isActive = link.getAttribute('data-heading-id') === activeHeadingId;
+                link.classList.toggle('toc__link--active', isActive);
+                if (isActive) {
+                    link.setAttribute('aria-current', 'location');
+                    keepActiveTocLinkInView(link);
+                } else {
+                    link.removeAttribute('aria-current');
+                }
+            });
+        }
+
+        function keepActiveTocLinkInView(link) {
+            if (!link) {
+                return;
+            }
+            const linkTop = link.offsetTop;
+            const linkBottom = linkTop + link.offsetHeight;
+            const viewTop = toc.scrollTop;
+            const viewBottom = viewTop + toc.clientHeight;
+            const offset = 12;
+            if (linkTop < viewTop + offset) {
+                toc.scrollTo({ top: Math.max(0, linkTop - offset), behavior: 'smooth' });
+            } else if (linkBottom > viewBottom - offset) {
+                toc.scrollTo({
+                    top: linkBottom - toc.clientHeight + offset,
+                    behavior: 'smooth'
+                });
+            }
+        }
+
+        function updateActiveHeading() {
+            const items = Array.from(preview.querySelectorAll('.preview-heading'));
+            if (!items.length) {
+                setActiveTocLink('');
+                return;
+            }
+            const container = getPreviewScrollContainer();
+            if (!container) {
+                setActiveTocLink(items[0].id || '');
+                return;
+            }
+            const containerRect = container.getBoundingClientRect();
+            const thresholdTop = containerRect.top + 28;
+            let currentId = items[0].id || '';
+            items.forEach(function(node) {
+                const rect = node.getBoundingClientRect();
+                if (rect.top - thresholdTop <= 0) {
+                    currentId = node.id;
+                }
+            });
+            setActiveTocLink(currentId);
         }
 
         function scrollToHeading(id) {
@@ -437,23 +515,29 @@
             const containerRect = container.getBoundingClientRect();
             const headingRect = heading.getBoundingClientRect();
             const targetTop = container.scrollTop + headingRect.top - containerRect.top - 12;
+            setActiveTocLink(id);
             container.scrollTo({ top: Math.max(0, targetTop), behavior: 'smooth' });
         }
 
         function renderToc(items) {
             if (!items.length) {
+                activeHeadingId = '';
                 toc.innerHTML = '<div class="toc__title">文档目录</div><div class="toc__empty">当前文档暂无标题</div>';
                 return;
             }
             toc.innerHTML = '<div class="toc__title">文档目录</div><ol class="toc__list">' + items.map(function(item) {
-                return '<li class="toc__item toc__item--level-' + item.level + '"><a class="toc__link" href="#' + item.id + '" data-heading-id="' + item.id + '">' + esc(item.text) + '</a></li>';
+                const activeClass = item.id === activeHeadingId ? ' toc__link--active' : '';
+                return '<li class="toc__item toc__item--level-' + item.level + '"><a class="toc__link' + activeClass + '" href="#' + item.id + '" data-heading-id="' + item.id + '">' + esc(item.text) + '</a></li>';
             }).join('') + '</ol>';
             toc.querySelectorAll('.toc__link').forEach(function(link) {
                 link.addEventListener('click', function(e) {
                     e.preventDefault();
-                    scrollToHeading(link.getAttribute('data-heading-id'));
+                    const id = link.getAttribute('data-heading-id');
+                    setActiveTocLink(id);
+                    scrollToHeading(id);
                 });
             });
+            updateActiveHeading();
         }
         
         function update(msg) {
@@ -461,6 +545,7 @@
                 preview.innerHTML = DOMPurify.sanitize(parseMd(editor.value), { USE_PROFILES: { html: true } });
                 renderToc(applyHeadingAnchors());
                 renderMermaid();
+                requestAnimationFrame(updateActiveHeading);
             } catch (e) {
                 preview.innerHTML = '<p>预览失败：' + esc(e && e.message ? e.message : String(e)) + '</p>';
                 renderToc([]);
@@ -713,6 +798,8 @@
             editor.style.fontSize = font.value + 'px';
             preview.style.fontSize = font.value + 'px';
         });
+        preview.closest('.pane').addEventListener('scroll', updateActiveHeading, { passive: true });
+        window.addEventListener('resize', updateActiveHeading);
         
         bar.addEventListener('click', function(e) {
             const btn = e.target.closest('button');

@@ -347,6 +347,17 @@
   background-color: rgba(0, 123, 255, 0.08);
 }
 
+.markdown-editor__toc-link--active {
+  color: #0056b3;
+  background-color: rgba(0, 123, 255, 0.16);
+  font-weight: 600;
+}
+
+.markdown-editor__toc-link:focus-visible {
+  outline: 2px solid #0d6efd;
+  outline-offset: 2px;
+}
+
 .markdown-editor--dark .markdown-editor__toc-link {
   color: #dee2e6;
 }
@@ -354,6 +365,11 @@
 .markdown-editor--dark .markdown-editor__toc-link:hover {
   color: #74c0fc;
   background-color: rgba(116, 192, 252, 0.12);
+}
+
+.markdown-editor--dark .markdown-editor__toc-link--active {
+  color: #a5d8ff;
+  background-color: rgba(116, 192, 252, 0.2);
 }
 
 .markdown-editor__heading {
@@ -556,7 +572,7 @@
 }
 
 .markdown-editor--preview-only {
-  overflow: auto;
+  overflow: hidden;
 }
 
 .markdown-editor--preview-only .markdown-editor__header {
@@ -584,7 +600,7 @@
 
 .markdown-editor--preview-only .markdown-editor__panel--preview {
   flex: 1 1 100%;
-  overflow: visible;
+  overflow: auto;
 }
 
 .markdown-editor--preview-only .markdown-editor__preview-shell {
@@ -593,8 +609,8 @@
 }
 
 .markdown-editor--preview-only .markdown-editor__body {
-  display: block;
-  overflow: visible;
+  display: flex;
+  overflow: hidden;
 }
 
 .markdown-editor--preview-only .markdown-editor__preview {

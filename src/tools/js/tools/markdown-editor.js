@@ -25,6 +25,7 @@ class MarkdownEditor {
     this.isPreviewOnly = false;
     this.tocElement = null;
     this.tocHeadings = [];
+    this.activeHeadingId = '';
     // 撤销历史相关
     this.history = [];
     this.historyIndex = -1;
@@ -221,6 +222,7 @@ class MarkdownEditor {
     });
 
     this.bindScrollSync();
+    this.bindPreviewHeadingTracking();
     this.bindDropZone();
     this.bindKeyboardShortcuts();
   }
@@ -433,6 +435,7 @@ class MarkdownEditor {
   togglePreviewMode() {
     this.isPreviewOnly = !this.isPreviewOnly;
     this.applyPreviewMode();
+    this.updateActiveHeading();
     this.updateStatusBar(this.isPreviewOnly ? '当前为预览模式' : '已退出预览模式');
   }
 
@@ -637,6 +640,7 @@ class MarkdownEditor {
     }
 
     if (!this.tocHeadings || this.tocHeadings.length === 0) {
+      this.activeHeadingId = '';
       this.tocElement.innerHTML = `
         <div class="markdown-editor__toc-title">文档目录</div>
         <div class="markdown-editor__toc-empty">当前文档暂无标题</div>
@@ -644,13 +648,17 @@ class MarkdownEditor {
       return;
     }
 
-    const items = this.tocHeadings.map((item) => `
+    const currentActiveId = this.activeHeadingId;
+    const items = this.tocHeadings.map((item) => {
+      const activeClass = item.id === currentActiveId ? ' markdown-editor__toc-link--active' : '';
+      return `
       <li class="markdown-editor__toc-item markdown-editor__toc-item--level-${item.level}">
-        <a class="markdown-editor__toc-link" href="#${item.id}" data-heading-id="${item.id}">
+        <a class="markdown-editor__toc-link${activeClass}" href="#${item.id}" data-heading-id="${item.id}">
           ${this.escapeHtml(item.text)}
         </a>
       </li>
-    `).join('');
+    `;
+    }).join('');
 
     this.tocElement.innerHTML = `
       <div class="markdown-editor__toc-title">文档目录</div>
@@ -663,9 +671,105 @@ class MarkdownEditor {
       link.addEventListener('click', (event) => {
         event.preventDefault();
         const headingId = link.getAttribute('data-heading-id');
+        this.setActiveTocLink(headingId);
         this.scrollToHeading(headingId);
       });
     });
+
+    this.updateActiveHeading();
+  }
+
+  bindPreviewHeadingTracking() {
+    const updateHeading = () => {
+      this.updateActiveHeading();
+    };
+
+    if (this.previewPanel) {
+      this.previewPanel.addEventListener('scroll', updateHeading, { passive: true });
+    }
+
+    if (this.rootElement) {
+      this.rootElement.addEventListener('scroll', updateHeading, { passive: true });
+    }
+
+    window.addEventListener('resize', updateHeading);
+  }
+
+  updateActiveHeading() {
+    if (!this.previewElement || !this.tocHeadings || this.tocHeadings.length === 0) {
+      this.setActiveTocLink('');
+      return;
+    }
+
+    const scrollContainer = this.getPreviewScrollContainer();
+    if (!scrollContainer) {
+      this.setActiveTocLink(this.tocHeadings[0].id);
+      return;
+    }
+
+    const containerRect = scrollContainer.getBoundingClientRect();
+    const thresholdTop = containerRect.top + 28;
+    let nextActiveId = this.tocHeadings[0].id;
+
+    for (let i = 0; i < this.tocHeadings.length; i += 1) {
+      const item = this.tocHeadings[i];
+      const heading = document.getElementById(item.id);
+      if (!heading || !this.previewElement.contains(heading)) {
+        continue;
+      }
+
+      const headingRect = heading.getBoundingClientRect();
+      if (headingRect.top - thresholdTop <= 0) {
+        nextActiveId = item.id;
+      } else {
+        break;
+      }
+    }
+
+    this.setActiveTocLink(nextActiveId);
+  }
+
+  setActiveTocLink(headingId) {
+    this.activeHeadingId = headingId || '';
+    if (!this.tocElement) {
+      return;
+    }
+
+    const links = this.tocElement.querySelectorAll('.markdown-editor__toc-link');
+    links.forEach((link) => {
+      const isActive = link.getAttribute('data-heading-id') === this.activeHeadingId;
+      link.classList.toggle('markdown-editor__toc-link--active', isActive);
+      if (isActive) {
+        link.setAttribute('aria-current', 'location');
+        this.keepActiveTocLinkInView(link);
+      } else {
+        link.removeAttribute('aria-current');
+      }
+    });
+  }
+
+  keepActiveTocLinkInView(link) {
+    if (!link || !this.tocElement) {
+      return;
+    }
+
+    const linkTop = link.offsetTop;
+    const linkBottom = linkTop + link.offsetHeight;
+    const viewTop = this.tocElement.scrollTop;
+    const viewBottom = viewTop + this.tocElement.clientHeight;
+    const offset = 12;
+
+    if (linkTop < viewTop + offset) {
+      this.tocElement.scrollTo({
+        top: Math.max(0, linkTop - offset),
+        behavior: 'smooth'
+      });
+    } else if (linkBottom > viewBottom - offset) {
+      this.tocElement.scrollTo({
+        top: linkBottom - this.tocElement.clientHeight + offset,
+        behavior: 'smooth'
+      });
+    }
   }
 
   scrollToHeading(headingId) {
@@ -695,11 +799,11 @@ class MarkdownEditor {
   }
 
   getPreviewScrollContainer() {
-    if (this.isPreviewOnly && this.rootElement) {
-      return this.rootElement;
-    }
     if (this.previewPanel) {
       return this.previewPanel;
+    }
+    if (this.isPreviewOnly && this.rootElement) {
+      return this.rootElement;
     }
     return null;
   }
