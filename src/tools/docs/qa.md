@@ -1404,3 +1404,76 @@
 - 可继续补充一个 PowerShell 版本脚本，支持更友好的参数解析与错误提示。
 - 如果后续常用 skill 范围更明确，可再按代码审查、文档生成、需求整理等场景做分类安装。
 
+---
+
+## 📅 2026-04-12 - Markdown 编辑器预览模式新增文档目录
+
+### 🔍 问题描述
+- **背景**：用户希望在 Markdown 编辑器的预览模式下显示 `.md` 文档目录，包含各级标题层级，并要求将相同能力同步迁移到 `src/tools/js/tools/markdown-editor.js` 中。
+- **目标**：无论是独立页 `src/tools/ui/markdown-editor.html`，还是工具模块 `src/tools/js/tools/markdown-editor.js`，都需要在预览区旁边展示可点击的目录导航。
+
+### 💡 解决思路
+- 在预览区外层增加一个两栏结构：左侧目录、右侧正文预览。
+- 每次 Markdown 渲染完成后，扫描 `h1` 到 `h6` 标题，自动生成唯一锚点 ID。
+- 根据标题层级生成目录列表，点击目录项时平滑滚动到对应标题位置。
+- 同步补充深色主题与响应式样式，确保在桌面和窄屏下都可正常显示。
+
+### 🔧 代码变更
+- **修改文件**：`src/tools/ui/markdown-editor.html`
+  - 新增 `.preview-shell`、`.toc`、`.preview-wrap` 结构。
+  - 新增目录生成逻辑：`slugifyHeading()`、`applyHeadingAnchors()`、`renderToc()`。
+  - 在 `update()` 中渲染 Markdown 后先生成目录，再继续 Mermaid 渲染。
+- **修改文件**：`src/tools/js/tools/markdown-editor.js`
+  - 预览面板新增 `markdownToc` 目录容器。
+  - 新增实例字段：`tocElement`、`tocHeadings`。
+  - 新增方法：`applyHeadingAnchors()`、`slugifyHeading()`、`renderTableOfContents()`、`scrollToHeading()`、`escapeHtml()`。
+  - 在 `updatePreview()` 中增加目录生成与标题锚点处理。
+- **修改文件**：`src/tools/css/markdown-editor.css`
+  - 新增目录容器、层级缩进、深色主题、预览模式布局、响应式适配等样式。
+
+### ✅ 实现效果
+- 预览区左侧会显示“文档目录”。
+- 支持 `h1` 到 `h6` 各级标题缩进展示。
+- 点击目录项会滚动到对应标题位置。
+- 没有标题时会显示“当前文档暂无标题”。
+- 独立 HTML 页面和工具模块版行为保持一致。
+
+### ⚠️ 注意事项
+- 目录基于预览渲染后的标题文本生成，重复标题会自动追加序号，避免锚点冲突。
+- 目录点击跳转使用当前预览容器滚动，不依赖浏览器页面级锚点跳转。
+
+### 🚀 后续优化
+- 可继续增加“当前阅读位置高亮目录项”功能。
+- 可考虑为超长目录增加折叠能力，提升大文档浏览体验。
+
+---
+
+## 📅 2026-04-12 - Markdown 编辑器预览模式目录跳转修复
+
+### 🔍 问题描述
+- **背景**：新增目录功能后，用户反馈在预览模式下点击目录项无法跳转到对应标题位置。
+- **现象**：目录可正常渲染，但点击目录链接后预览区域不滚动，尤其在“预览模式”下更明显。
+- **根因**：原实现直接使用 `heading.offsetTop` 配合局部容器滚动，这种方式在不同滚动容器之间并不稳定；普通模式下滚动容器是预览面板，预览模式下滚动容器变成编辑器根容器，导致点击目录时计算出的滚动位置不准确。
+
+### 💡 解决思路
+- 抽离统一的“预览滚动容器”获取逻辑。
+- 不再依赖单纯的 `offsetTop`，而是改成基于 `getBoundingClientRect()` 与当前滚动条位置计算相对目标位置。
+- 独立页与模块版统一采用相同跳转策略，保证两边行为一致。
+
+### 🔧 代码变更
+- **修改文件**：`src/tools/ui/markdown-editor.html`
+  - 新增 `getPreviewScrollContainer()` 与 `scrollToHeading()`。
+  - 目录点击时统一调用 `scrollToHeading()`，自动根据是否处于预览模式决定滚动容器。
+- **修改文件**：`src/tools/js/tools/markdown-editor.js`
+  - 新增 `getPreviewScrollContainer()` 方法。
+  - 重写 `scrollToHeading()`，改为根据目标标题与滚动容器的矩形位置差计算滚动目标。
+
+### ✅ 修复结果
+- 普通编辑预览模式下，点击目录项可以滚动到对应标题。
+- 单独预览模式下，点击目录项也能正确跳转。
+- 目录跳转逻辑在独立页和工具模块版中保持一致。
+
+### 🚀 后续优化
+- 可在滚动时自动高亮当前目录项，提升长文档定位体验。
+- 如后续需要，也可支持目录项展开/折叠与返回顶部按钮。
+

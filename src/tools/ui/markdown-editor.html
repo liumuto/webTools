@@ -96,6 +96,68 @@
             font: 14px/1.7 Consolas, monospace;
             white-space: pre-wrap
         }
+        .preview-shell {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start
+        }
+        .preview-wrap {
+            flex: 1;
+            min-width: 0
+        }
+        .toc {
+            width: 240px;
+            flex: 0 0 240px;
+            position: sticky;
+            top: 16px;
+            align-self: flex-start;
+            max-height: calc(100vh - 120px);
+            overflow: auto;
+            padding: 14px;
+            border: 1px solid #dbe3ee;
+            border-radius: 12px;
+            background: #fff
+        }
+        .toc__title {
+            margin-bottom: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #334155
+        }
+        .toc__empty {
+            font-size: 13px;
+            color: #94a3b8
+        }
+        .toc__list {
+            margin: 0;
+            padding: 0;
+            list-style: none
+        }
+        .toc__item {
+            margin: 0
+        }
+        .toc__item--level-1 .toc__link { padding-left: 0 }
+        .toc__item--level-2 .toc__link { padding-left: 12px }
+        .toc__item--level-3 .toc__link { padding-left: 24px }
+        .toc__item--level-4 .toc__link { padding-left: 36px }
+        .toc__item--level-5 .toc__link { padding-left: 48px }
+        .toc__item--level-6 .toc__link { padding-left: 60px }
+        .toc__link {
+            display: block;
+            padding: 6px 0;
+            color: #475569;
+            text-decoration: none;
+            font-size: 13px;
+            line-height: 1.5;
+            border-radius: 6px
+        }
+        .toc__link:hover {
+            color: #2563eb;
+            background: #eff6ff
+        }
+        .preview-heading {
+            scroll-margin-top: 20px
+        }
         .preview {
             line-height: 1.8;
             word-break: break-word
@@ -182,6 +244,34 @@
         .dark .mermaid-box {
             background: #111827
         }
+        .dark .toc {
+            background: #111827;
+            border-color: #334155
+        }
+        .dark .toc__title {
+            color: #e2e8f0
+        }
+        .dark .toc__empty {
+            color: #94a3b8
+        }
+        .dark .toc__link {
+            color: #cbd5e1
+        }
+        .dark .toc__link:hover {
+            color: #93c5fd;
+            background: #1e293b
+        }
+        @media (max-width: 1024px) {
+            .preview-shell {
+                flex-direction: column
+            }
+            .toc {
+                width: 100%;
+                flex-basis: auto;
+                position: static;
+                max-height: none
+            }
+        }
         @media (max-width: 768px) {
             .app--preview .pane--left {
                 display: none
@@ -233,8 +323,13 @@
                 <textarea id="editor" class="txt"></textarea>
             </section>
             <section class="pane">
-                <div class="label">预览区</div>
-                <div id="preview" class="preview"></div>
+                <div class="preview-shell">
+                    <aside class="toc" id="toc" aria-label="文档目录"></aside>
+                    <div class="preview-wrap">
+                        <div class="label">预览区</div>
+                        <div id="preview" class="preview"></div>
+                    </div>
+                </div>
             </section>
         </div>
         <div id="status" class="status">就绪</div>
@@ -249,6 +344,7 @@
         const file = document.getElementById('file');
         const drop = document.getElementById('drop');
         const font = document.getElementById('font');
+        const toc = document.getElementById('toc');
         let dark = false, rid = 0, previewOnly = false;
         
         marked.setOptions({ breaks: true, gfm: true });
@@ -291,13 +387,83 @@
                 });
             });
         }
+
+        function slugifyHeading(text) {
+            return String(text)
+                .toLowerCase()
+                .trim()
+                .replace(/<[^>]*>/g, '')
+                .replace(/[\u0000-\u001f]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/[^\w\-\u4e00-\u9fa5]/g, '-')
+                .replace(/-+/g, '-')
+                .replace(/^-|-$/g, '');
+        }
+
+        function applyHeadingAnchors() {
+            const headings = Array.from(preview.querySelectorAll('h1,h2,h3,h4,h5,h6'));
+            const slugMap = new Map();
+            return headings.map(function(node, index) {
+                const text = node.textContent.trim();
+                const level = Number(node.tagName.slice(1));
+                const baseSlug = slugifyHeading(text) || ('section-' + (index + 1));
+                const count = slugMap.get(baseSlug) || 0;
+                slugMap.set(baseSlug, count + 1);
+                const id = count === 0 ? baseSlug : (baseSlug + '-' + (count + 1));
+                node.id = id;
+                node.classList.add('preview-heading');
+                return {
+                    id: id,
+                    text: text || ('未命名标题 ' + (index + 1)),
+                    level: level
+                };
+            });
+        }
+
+        function getPreviewScrollContainer() {
+            return previewOnly ? app : preview.closest('.pane');
+        }
+
+        function scrollToHeading(id) {
+            const heading = document.getElementById(id);
+            if (!heading || !preview.contains(heading)) {
+                return;
+            }
+            const container = getPreviewScrollContainer();
+            if (!container) {
+                heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                return;
+            }
+            const containerRect = container.getBoundingClientRect();
+            const headingRect = heading.getBoundingClientRect();
+            const targetTop = container.scrollTop + headingRect.top - containerRect.top - 12;
+            container.scrollTo({ top: Math.max(0, targetTop), behavior: 'smooth' });
+        }
+
+        function renderToc(items) {
+            if (!items.length) {
+                toc.innerHTML = '<div class="toc__title">文档目录</div><div class="toc__empty">当前文档暂无标题</div>';
+                return;
+            }
+            toc.innerHTML = '<div class="toc__title">文档目录</div><ol class="toc__list">' + items.map(function(item) {
+                return '<li class="toc__item toc__item--level-' + item.level + '"><a class="toc__link" href="#' + item.id + '" data-heading-id="' + item.id + '">' + esc(item.text) + '</a></li>';
+            }).join('') + '</ol>';
+            toc.querySelectorAll('.toc__link').forEach(function(link) {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    scrollToHeading(link.getAttribute('data-heading-id'));
+                });
+            });
+        }
         
         function update(msg) {
             try {
                 preview.innerHTML = DOMPurify.sanitize(parseMd(editor.value), { USE_PROFILES: { html: true } });
+                renderToc(applyHeadingAnchors());
                 renderMermaid();
             } catch (e) {
                 preview.innerHTML = '<p>预览失败：' + esc(e && e.message ? e.message : String(e)) + '</p>';
+                renderToc([]);
             }
             setStatus(msg || '');
         }

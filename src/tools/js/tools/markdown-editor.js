@@ -23,6 +23,8 @@ class MarkdownEditor {
     this.fontSelect = null;
     this.previewModeBtn = null;
     this.isPreviewOnly = false;
+    this.tocElement = null;
+    this.tocHeadings = [];
     // 撤销历史相关
     this.history = [];
     this.historyIndex = -1;
@@ -105,7 +107,13 @@ class MarkdownEditor {
               placeholder="在此输入 Markdown…"></textarea>
           </div>
           <div class="markdown-editor__panel markdown-editor__panel--preview">
-            <div class="markdown-editor__preview" id="markdownPreview"></div>
+            <div class="markdown-editor__preview-shell">
+              <aside class="markdown-editor__toc" id="markdownToc" aria-label="文档目录"></aside>
+              <div class="markdown-editor__preview-wrap">
+                <div class="markdown-editor__preview-label">预览区</div>
+                <div class="markdown-editor__preview" id="markdownPreview"></div>
+              </div>
+            </div>
           </div>
         </div>
         <footer class="markdown-editor__status" id="mdStatusBar" aria-live="polite"></footer>
@@ -124,6 +132,7 @@ class MarkdownEditor {
     this.exportHtmlBtn = document.getElementById('exportHtml');
     this.exportPdfBtn = document.getElementById('exportPdf');
     this.previewModeBtn = document.getElementById('previewModeToggle');
+    this.tocElement = document.getElementById('markdownToc');
     this.themeToggle = document.getElementById('themeToggle');
     this.toolbar = document.getElementById('mdToolbar');
     this.dropZone = document.getElementById('mdDropZone');
@@ -445,6 +454,8 @@ class MarkdownEditor {
     try {
       const rawHtml = this.parseMarkdown(markdown);
       this.previewElement.innerHTML = this.sanitizeHtml(rawHtml);
+      this.applyHeadingAnchors();
+      this.renderTableOfContents();
       this.highlightCode();
       this.renderMermaidDiagrams(requestId);
     } catch (err) {
@@ -579,6 +590,127 @@ class MarkdownEditor {
         code.classList.add('hljs');
       }
     });
+  }
+
+  applyHeadingAnchors() {
+    if (!this.previewElement) {
+      return;
+    }
+
+    const headings = Array.from(this.previewElement.querySelectorAll('h1, h2, h3, h4, h5, h6'));
+    const slugMap = new Map();
+
+    this.tocHeadings = headings.map((heading, index) => {
+      const text = heading.textContent.trim();
+      const level = Number(heading.tagName.slice(1));
+      const baseSlug = this.slugifyHeading(text) || `section-${index + 1}`;
+      const count = slugMap.get(baseSlug) || 0;
+      slugMap.set(baseSlug, count + 1);
+      const id = count === 0 ? baseSlug : `${baseSlug}-${count + 1}`;
+
+      heading.id = id;
+      heading.classList.add('markdown-editor__heading');
+
+      return {
+        id,
+        text: text || `未命名标题 ${index + 1}`,
+        level
+      };
+    });
+  }
+
+  slugifyHeading(text) {
+    return String(text)
+      .toLowerCase()
+      .trim()
+      .replace(/<[^>]*>/g, '')
+      .replace(/[\u0000-\u001f]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/[^\w\-\u4e00-\u9fa5]/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
+  }
+
+  renderTableOfContents() {
+    if (!this.tocElement) {
+      return;
+    }
+
+    if (!this.tocHeadings || this.tocHeadings.length === 0) {
+      this.tocElement.innerHTML = `
+        <div class="markdown-editor__toc-title">文档目录</div>
+        <div class="markdown-editor__toc-empty">当前文档暂无标题</div>
+      `;
+      return;
+    }
+
+    const items = this.tocHeadings.map((item) => `
+      <li class="markdown-editor__toc-item markdown-editor__toc-item--level-${item.level}">
+        <a class="markdown-editor__toc-link" href="#${item.id}" data-heading-id="${item.id}">
+          ${this.escapeHtml(item.text)}
+        </a>
+      </li>
+    `).join('');
+
+    this.tocElement.innerHTML = `
+      <div class="markdown-editor__toc-title">文档目录</div>
+      <ol class="markdown-editor__toc-list">${items}
+      </ol>
+    `;
+
+    const links = this.tocElement.querySelectorAll('.markdown-editor__toc-link');
+    links.forEach((link) => {
+      link.addEventListener('click', (event) => {
+        event.preventDefault();
+        const headingId = link.getAttribute('data-heading-id');
+        this.scrollToHeading(headingId);
+      });
+    });
+  }
+
+  scrollToHeading(headingId) {
+    if (!headingId || !this.previewElement) {
+      return;
+    }
+
+    const heading = document.getElementById(headingId);
+    if (!heading || !this.previewElement.contains(heading)) {
+      return;
+    }
+
+    const scrollContainer = this.getPreviewScrollContainer();
+    if (!scrollContainer) {
+      heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+
+    const containerRect = scrollContainer.getBoundingClientRect();
+    const headingRect = heading.getBoundingClientRect();
+    const targetTop = scrollContainer.scrollTop + headingRect.top - containerRect.top - 12;
+
+    scrollContainer.scrollTo({
+      top: Math.max(0, targetTop),
+      behavior: 'smooth'
+    });
+  }
+
+  getPreviewScrollContainer() {
+    if (this.isPreviewOnly && this.rootElement) {
+      return this.rootElement;
+    }
+    if (this.previewPanel) {
+      return this.previewPanel;
+    }
+    return null;
+  }
+
+  escapeHtml(text) {
+    return String(text)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 
   renderMermaidDiagrams(requestId) {

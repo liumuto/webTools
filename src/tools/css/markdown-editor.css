@@ -242,6 +242,124 @@
   color: #e0e0e0;
 }
 
+.markdown-editor__preview-shell {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.markdown-editor__preview-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.markdown-editor__preview-label {
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: #495057;
+}
+
+.markdown-editor--dark .markdown-editor__preview-label {
+  color: #adb5bd;
+}
+
+.markdown-editor__toc {
+  width: 240px;
+  flex: 0 0 240px;
+  position: sticky;
+  top: 20px;
+  align-self: flex-start;
+  max-height: calc(100vh - 160px);
+  overflow: auto;
+  padding: 14px;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  background-color: #ffffff;
+}
+
+.markdown-editor--dark .markdown-editor__toc {
+  background-color: #2d2d2d;
+  border-color: #3e3e3e;
+}
+
+.markdown-editor__toc-title {
+  margin-bottom: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #343a40;
+}
+
+.markdown-editor--dark .markdown-editor__toc-title {
+  color: #f1f3f5;
+}
+
+.markdown-editor__toc-empty {
+  font-size: 13px;
+  color: #868e96;
+}
+
+.markdown-editor__toc-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.markdown-editor__toc-item {
+  margin: 0;
+}
+
+.markdown-editor__toc-item--level-1 .markdown-editor__toc-link {
+  padding-left: 0;
+}
+
+.markdown-editor__toc-item--level-2 .markdown-editor__toc-link {
+  padding-left: 12px;
+}
+
+.markdown-editor__toc-item--level-3 .markdown-editor__toc-link {
+  padding-left: 24px;
+}
+
+.markdown-editor__toc-item--level-4 .markdown-editor__toc-link {
+  padding-left: 36px;
+}
+
+.markdown-editor__toc-item--level-5 .markdown-editor__toc-link {
+  padding-left: 48px;
+}
+
+.markdown-editor__toc-item--level-6 .markdown-editor__toc-link {
+  padding-left: 60px;
+}
+
+.markdown-editor__toc-link {
+  display: block;
+  padding: 6px 0;
+  border-radius: 6px;
+  color: #495057;
+  text-decoration: none;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.markdown-editor__toc-link:hover {
+  color: #007bff;
+  background-color: rgba(0, 123, 255, 0.08);
+}
+
+.markdown-editor--dark .markdown-editor__toc-link {
+  color: #dee2e6;
+}
+
+.markdown-editor--dark .markdown-editor__toc-link:hover {
+  color: #74c0fc;
+  background-color: rgba(116, 192, 252, 0.12);
+}
+
+.markdown-editor__heading {
+  scroll-margin-top: 20px;
+}
+
 .markdown-editor__preview {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell,
     sans-serif;
@@ -469,6 +587,11 @@
   overflow: visible;
 }
 
+.markdown-editor--preview-only .markdown-editor__preview-shell {
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
 .markdown-editor--preview-only .markdown-editor__body {
   display: block;
   overflow: visible;
@@ -477,6 +600,19 @@
 .markdown-editor--preview-only .markdown-editor__preview {
   max-width: 1000px;
   margin: 0 auto;
+}
+
+@media (max-width: 1024px) {
+  .markdown-editor__preview-shell {
+    flex-direction: column;
+  }
+
+  .markdown-editor__toc {
+    width: 100%;
+    flex-basis: auto;
+    position: static;
+    max-height: none;
+  }
 }
 
 @media (max-width: 768px) {
