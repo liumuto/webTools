@@ -1477,3 +1477,46 @@
 - 可在滚动时自动高亮当前目录项，提升长文档定位体验。
 - 如后续需要，也可支持目录项展开/折叠与返回顶部按钮。
 
+---
+
+## 📅 2026-04-12 - 新增精简版开发 skills 与项目规则补充
+
+### 🔍 问题描述
+- **背景**：用户希望按之前确认的“精简版清单”，为项目补充更适合日常编程协作的 skills，并同步增强项目级 rules。
+- **目标**：让后续开发在前端调试、可访问性检查、跨浏览器排查、QA 记录、Bug 修复边界控制等方面有更明确的协作约束与能力说明。
+
+### 💡 解决思路
+- 先检查当前 `.agents/skills/` 与 `.cursor/rules/` 的现有结构，保持与项目现有组织方式一致。
+- 按精简版清单新增 8 个技能目录，每个 skill 提供清晰的适用场景、执行原则与输出要求。
+- 统一整理 `rules.mdc`，将原有 HTML / CSS / JS 规范保留，并补充最小改动、验证、可访问性、响应式、目录归属、变更说明等规则。
+
+### 🔧 代码变更
+- **新增目录与文件**：
+  - `.agents/skills/frontend-debugger/SKILL.md`
+  - `.agents/skills/ui-ux-review/SKILL.md`
+  - `.agents/skills/accessibility-checker/SKILL.md`
+  - `.agents/skills/cross-browser-debug/SKILL.md`
+  - `.agents/skills/qa-recorder/SKILL.md`
+  - `.agents/skills/bugfix-first/SKILL.md`
+  - `.agents/skills/refactor-guard/SKILL.md`
+  - `.agents/skills/git-diff-explainer/SKILL.md`
+- **修改文件**：
+  - `.cursor/rules/rules.mdc`
+- **实现内容**：
+  - 新增面向原生前端项目的调试、评审、记录、边界控制类 skills。
+  - 规则文件中补充开发边界、改后验证、可访问性、响应式与目录结构要求。
+  - 清理原规则文件顶部重复 frontmatter，统一为单一规则入口。
+
+### ✅ 测试验证
+- **验证方法**：检查新增 skills 目录结构与 `SKILL.md` 文件是否创建成功，并重新读取 `rules.mdc` 确认内容已更新。
+- **验证结果**：8 个新增 skills 已写入项目 `.agents/skills/` 目录；`rules.mdc` 已更新为扩展后的规则版本。
+- **说明**：本次主要为配置与协作规范补充，未涉及页面运行逻辑变更。
+
+### ⚠️ 注意事项
+- 新增 skills 目前为项目内本地说明型 skills，后续如需进一步细化，可按具体使用习惯继续增强。
+- `rules.mdc` 的模块拆分规则保留为“影响当前开发效率时再拆分”，避免对现有长文件做无关强制重构。
+
+### 🚀 后续优化
+- 可继续补充更细的测试清单型 skill，例如工具页边界场景测试模板。
+- 如后续项目目录继续扩展，可把规则按“前端规范 / 协作规范 / 文档规范”拆成多个规则文件。
+
