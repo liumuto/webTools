@@ -262,8 +262,10 @@ class WebToolsApp {
     const navBtns = document.querySelectorAll('.header__nav-btn');
     navBtns.forEach(btn => {
       btn.classList.remove('header__nav-btn--active');
+      btn.setAttribute('aria-pressed', 'false');
       if (btn.dataset.category === category) {
         btn.classList.add('header__nav-btn--active');
+        btn.setAttribute('aria-pressed', 'true');
       }
     });
 
@@ -278,10 +280,15 @@ class WebToolsApp {
     
     const favoritesBtn = document.getElementById('favoritesBtn');
     if (favoritesBtn) {
+      favoritesBtn.setAttribute('aria-pressed', String(this.isFavoritesMode));
       if (this.isFavoritesMode) {
         favoritesBtn.classList.add('favorites-toggle__btn--active');
+        const label = favoritesBtn.querySelector('.favorites-toggle__text');
+        if (label) label.textContent = '收藏中';
       } else {
         favoritesBtn.classList.remove('favorites-toggle__btn--active');
+        const label = favoritesBtn.querySelector('.favorites-toggle__text');
+        if (label) label.textContent = '收藏';
       }
     }
 
@@ -310,6 +317,9 @@ class WebToolsApp {
     
     const toolsGrid = document.getElementById('toolsGrid');
     const emptyState = document.getElementById('emptyState');
+    const toolTotal = document.getElementById('toolTotal');
+    const toolVisible = document.getElementById('toolVisible');
+    const toolFavorites = document.getElementById('toolFavorites');
     
     if (!toolsGrid) {
       console.error('❌ 找不到 toolsGrid 元素');
@@ -321,11 +331,15 @@ class WebToolsApp {
 
     // 获取过滤后的工具列表
     const filteredTools = this.getFilteredTools();
+    if (toolTotal) toolTotal.textContent = String(this.tools.length);
+    if (toolVisible) toolVisible.textContent = String(filteredTools.length);
+    if (toolFavorites) toolFavorites.textContent = String(this.favorites.size);
     console.log('🔍 过滤后的工具数量:', filteredTools.length);
     console.log('🔍 过滤后的工具列表:', filteredTools.map(t => t.id));
 
     // 清空网格
     toolsGrid.innerHTML = '';
+    toolsGrid.setAttribute('aria-busy', 'true');
 
     if (filteredTools.length === 0) {
       console.log('📭 没有工具需要显示，显示空状态');
@@ -367,6 +381,9 @@ class WebToolsApp {
         }
       });
     }
+
+    toolsGrid.setAttribute('aria-busy', 'false');
+    this.updateHeaderState();
   }
 
   /**
@@ -506,6 +523,8 @@ class WebToolsApp {
       </div>
     `;
 
+    modal.classList.toggle('modal--color-picker', toolConfig.id === 'color-picker');
+
     // 显示弹窗
     modal.classList.add('modal--active');
     document.body.style.overflow = 'hidden';
@@ -573,6 +592,25 @@ class WebToolsApp {
     } else {
       emptyStateTitle.textContent = '暂无工具';
       emptyStateDescription.textContent = '没有找到匹配的工具，请尝试其他搜索条件';
+    }
+  }
+
+  /**
+   * 更新头部状态
+   */
+  updateHeaderState() {
+    const favoritesBtn = document.getElementById('favoritesBtn');
+    if (favoritesBtn) {
+      favoritesBtn.setAttribute('aria-pressed', String(this.isFavoritesMode));
+      const label = favoritesBtn.querySelector('.favorites-toggle__text');
+      if (label) {
+        label.textContent = this.isFavoritesMode ? '收藏中' : '收藏';
+      }
+      if (this.isFavoritesMode) {
+        favoritesBtn.classList.add('favorites-toggle__btn--active');
+      } else {
+        favoritesBtn.classList.remove('favorites-toggle__btn--active');
+      }
     }
   }
 

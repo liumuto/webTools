@@ -27,17 +27,17 @@ class ColorPickerTool {
             
             <div class="color-picker__picker-area">
               <div class="color-picker__canvas-container">
-                <canvas id="colorCanvas" class="color-picker__canvas" width="300" height="200"></canvas>
+                <canvas id="colorCanvas" class="color-picker__canvas" width="260" height="150"></canvas>
                 <div id="colorPointer" class="color-picker__pointer"></div>
               </div>
               
               <div class="color-picker__hue-slider">
-                <canvas id="hueCanvas" class="color-picker__hue-canvas" width="300" height="20"></canvas>
+                <canvas id="hueCanvas" class="color-picker__hue-canvas" width="260" height="18"></canvas>
                 <div id="huePointer" class="color-picker__hue-pointer"></div>
               </div>
               
               <div class="color-picker__alpha-slider">
-                <canvas id="alphaCanvas" class="color-picker__alpha-canvas" width="300" height="20"></canvas>
+                <canvas id="alphaCanvas" class="color-picker__alpha-canvas" width="260" height="18"></canvas>
                 <div id="alphaPointer" class="color-picker__alpha-pointer"></div>
               </div>
             </div>

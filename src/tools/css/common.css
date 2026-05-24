@@ -3,18 +3,18 @@
 /* CSS变量定义 */
 :root {
   /* 颜色变量 */
-  --primary-color: #667eea;
-  --primary-dark: #5a67d8;
-  --secondary-color: #764ba2;
-  --background-color: #f8fafc;
+  --primary-color: #2563eb;
+  --primary-dark: #1d4ed8;
+  --secondary-color: #0f766e;
+  --background-color: #f5f7fb;
   --surface-color: #ffffff;
-  --text-color: #2d3748;
-  --text-secondary: #718096;
-  --border-color: #e2e8f0;
-  --shadow-color: rgba(0, 0, 0, 0.1);
-  --success-color: #48bb78;
-  --warning-color: #ed8936;
-  --error-color: #f56565;
+  --text-color: #0f172a;
+  --text-secondary: #64748b;
+  --border-color: #dbe3ee;
+  --shadow-color: rgba(15, 23, 42, 0.08);
+  --success-color: #16a34a;
+  --warning-color: #d97706;
+  --error-color: #dc2626;
   
   /* 字体变量 */
   --font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
@@ -37,8 +37,8 @@
   /* 圆角变量 */
   --radius-sm: 0.25rem;
   --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
   
   /* 阴影变量 */
   --shadow-sm: 0 1px 2px 0 var(--shadow-color);
@@ -69,9 +69,11 @@ body {
   font-size: var(--font-size-base);
   line-height: 1.6;
   color: var(--text-color);
-  background-color: var(--background-color);
+  background:
+    linear-gradient(180deg, #f8fbff 0%, #f5f7fb 44%, #eef2f7 100%);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  color-scheme: light;
 }
 
 /* 链接样式 */
@@ -95,12 +97,21 @@ button {
   transition: all var(--transition-fast);
 }
 
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid rgba(37, 99, 235, 0.55);
+  outline-offset: 2px;
+}
+
 /* 输入框基础样式 */
 input, textarea, select {
   font-family: inherit;
   font-size: inherit;
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
+  border-radius: 8px;
   padding: var(--spacing-sm) var(--spacing-md);
   background-color: var(--surface-color);
   color: var(--text-color);
@@ -110,7 +121,7 @@ input, textarea, select {
 input:focus, textarea:focus, select:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
 /* 滚动条样式 */

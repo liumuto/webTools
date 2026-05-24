@@ -1,141 +1,122 @@
-/* Markdown编辑器样式（工具集内联路径：src/tools/css） */
+/* Markdown Editor - techno style */
 .markdown-editor {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
   display: flex;
   flex-direction: column;
-  height: 100vh;
   width: 100vw;
-  background-color: #ffffff;
-  border-radius: 0;
+  height: 100vh;
   overflow: hidden;
-  box-shadow: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 9999;
+  background:
+    radial-gradient(circle at top left, rgba(56, 189, 248, 0.08), transparent 30%),
+    radial-gradient(circle at bottom right, rgba(99, 102, 241, 0.06), transparent 28%),
+    linear-gradient(180deg, #f7f9fc 0%, #eef3f8 100%);
+  color: #0f172a;
 }
 
 .markdown-editor--dark {
-  background-color: #1e1e1e;
-  color: #e0e0e0;
+  background:
+    radial-gradient(circle at top left, rgba(56, 189, 248, 0.08), transparent 30%),
+    radial-gradient(circle at bottom right, rgba(99, 102, 241, 0.08), transparent 28%),
+    linear-gradient(180deg, #f7f9fc 0%, #eef3f8 100%);
+  color: #0f172a;
 }
 
 .markdown-editor__header {
-  padding: 16px;
-  border-bottom: 1px solid #e0e0e0;
-  background-color: #f8f9fa;
+  padding: 16px 18px 14px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(16px);
 }
 
 .markdown-editor--dark .markdown-editor__header {
-  background-color: #2d2d2d;
-  border-bottom-color: #3e3e3e;
+  background: rgba(255, 255, 255, 0.82);
 }
 
 .markdown-editor__controls {
   display: flex;
-  gap: 8px;
   flex-wrap: wrap;
   align-items: center;
+  gap: 10px;
+}
+
+.markdown-editor__controls .btn:focus-visible,
+.markdown-editor__toolbar-btn:focus-visible,
+.markdown-editor__font-select:focus-visible,
+.markdown-editor__split-range:focus-visible {
+  outline: 2px solid #38bdf8;
+  outline-offset: 2px;
 }
 
 .markdown-editor__toolbar {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
   margin-top: 12px;
   padding-top: 12px;
-  border-top: 1px solid #e0e0e0;
-}
-
-.markdown-editor--dark .markdown-editor__toolbar {
-  border-top-color: #3e3e3e;
-}
-
-.markdown-editor__toolbar-btn {
-  padding: 6px 10px;
-  font-size: 13px;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-  background-color: #fff;
-  color: #495057;
-  cursor: pointer;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
-}
-
-.markdown-editor__toolbar-btn:hover {
-  background-color: #e9ecef;
-  border-color: #adb5bd;
-}
-
-.markdown-editor--dark .markdown-editor__toolbar-btn {
-  background-color: #2d2d2d;
-  border-color: #495057;
-  color: #e0e0e0;
-}
-
-.markdown-editor--dark .markdown-editor__toolbar-btn:hover {
-  background-color: #3e3e3e;
+  border-top: 1px solid rgba(148, 163, 184, 0.16);
 }
 
 .markdown-editor__options {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px 16px;
+  gap: 10px 14px;
   margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(148, 163, 184, 0.16);
 }
 
 .markdown-editor__font-label,
-.markdown-editor__split-label {
-  font-size: 13px;
-  color: #495057;
+.markdown-editor__split-label,
+.markdown-editor__preview-label {
+  font-size: 0.8rem;
+  color: #64748b;
 }
 
-.markdown-editor--dark .markdown-editor__font-label,
-.markdown-editor--dark .markdown-editor__split-label {
-  color: #adb5bd;
+.markdown-editor__font-select,
+.markdown-editor__split-range {
+  accent-color: #38bdf8;
 }
 
 .markdown-editor__font-select {
-  padding: 6px 8px;
-  border-radius: 4px;
-  border: 1px solid #ced4da;
-  font-size: 13px;
-  background-color: #fff;
-  color: #333;
-}
-
-.markdown-editor--dark .markdown-editor__font-select {
-  background-color: #2d2d2d;
-  border-color: #495057;
-  color: #e0e0e0;
+  min-width: 90px;
+  padding: 7px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: #fff;
+  color: #0f172a;
 }
 
 .markdown-editor__split-range {
-  width: 140px;
-  vertical-align: middle;
+  width: 160px;
 }
 
 .markdown-editor__split-value {
-  font-size: 13px;
-  min-width: 2.5em;
-  color: #495057;
-}
-
-.markdown-editor--dark .markdown-editor__split-value {
-  color: #adb5bd;
+  min-width: 3em;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #334155;
 }
 
 .btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  border: none;
-  border-radius: 4px;
+  gap: 8px;
+  padding: 9px 14px;
+  border: 1px solid transparent;
+  border-radius: 10px;
   cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.2s ease;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
 }
 
 .btn__icon {
@@ -145,107 +126,113 @@
 }
 
 .btn--primary {
-  background-color: #007bff;
-  color: white;
+  background: linear-gradient(135deg, #38bdf8 0%, #6366f1 100%);
+  color: #fff;
+  box-shadow: 0 12px 24px rgba(56, 189, 248, 0.18);
 }
 
 .btn--primary:hover {
-  background-color: #0069d9;
+  box-shadow: 0 14px 28px rgba(56, 189, 248, 0.24);
 }
 
 .btn--secondary {
-  background-color: #6c757d;
-  color: white;
+  background: #f8fafc;
+  color: #0f172a;
+  border-color: rgba(148, 163, 184, 0.22);
 }
 
 .btn--secondary:hover {
-  background-color: #5a6268;
+  background: #eef3f8;
 }
 
 .btn--outline {
-  background-color: transparent;
-  border: 1px solid #ced4da;
-  color: #495057;
+  background: rgba(255, 255, 255, 0.78);
+  color: #0f172a;
+  border-color: rgba(148, 163, 184, 0.24);
 }
 
 .btn--outline:hover {
-  background-color: #f8f9fa;
+  background: rgba(148, 163, 184, 0.12);
 }
 
-.markdown-editor--dark .btn--outline {
-  border-color: #495057;
-  color: #e0e0e0;
-}
-
-.markdown-editor--dark .btn--outline:hover {
-  background-color: #2d2d2d;
+.markdown-editor__preview-toggle--active {
+  background: linear-gradient(135deg, #22c55e 0%, #14b8a6 100%);
+  color: #fff;
+  border-color: transparent;
 }
 
 .markdown-editor__body {
   display: flex;
   flex: 1;
-  overflow: hidden;
   min-height: 0;
+  overflow: hidden;
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
 }
 
 .markdown-editor__panel {
-  flex: 1 1 50%;
-  padding: 20px;
-  overflow: auto;
   min-width: 0;
-  transition: flex-basis 0.15s ease;
-}
-
-.markdown-editor__textarea {
-  width: 100%;
-  height: 100%;
-  min-height: 100%;
-  border: none;
-  outline: none;
-  resize: none;
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-  font-size: 14px;
-  line-height: 1.6;
-  color: #333;
-  background-color: transparent;
+  flex: 1 1 50%;
+  overflow: auto;
+  padding: 20px;
+  transition: flex-basis 0.18s ease, opacity 0.18s ease;
 }
 
 .markdown-editor__panel--editor {
-  border-right: 1px solid #e0e0e0;
+  border-right: 1px solid rgba(148, 163, 184, 0.16);
+  background:
+    linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
 }
 
 .markdown-editor__panel--editor.markdown-editor__panel--drag {
-  outline: 2px dashed #007bff;
-  outline-offset: -4px;
-  background-color: rgba(0, 123, 255, 0.06);
+  outline: 2px dashed rgba(56, 189, 248, 0.8);
+  outline-offset: -6px;
+  background:
+    linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%);
 }
 
-.markdown-editor--dark .markdown-editor__panel--editor {
-  border-right-color: #3e3e3e;
+.markdown-editor__panel--preview {
+  background:
+    linear-gradient(180deg, rgba(248, 250, 252, 0.98), rgba(241, 245, 249, 0.98));
+  color: #0f172a;
 }
 
 .markdown-editor__textarea {
   width: 100%;
-  height: 100%;
-  min-height: 200px;
-  border: none;
+  min-height: 100%;
+  border: 0;
   outline: none;
-  resize: vertical;
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  resize: none;
+  background: transparent;
+  color: #0f172a;
+  font-family: 'JetBrains Mono', 'SFMono-Regular', 'Consolas', monospace;
   font-size: 14px;
-  line-height: 1.6;
-  color: #333;
-  background-color: transparent;
+  line-height: 1.7;
+  caret-color: #2563eb;
 }
 
-.markdown-editor--dark .markdown-editor__textarea {
-  color: #e0e0e0;
+.markdown-editor__textarea::placeholder {
+  color: #94a3b8;
 }
 
 .markdown-editor__preview-shell {
   display: flex;
-  gap: 20px;
+  gap: 16px;
   align-items: flex-start;
+  max-width: 1320px;
+  margin: 0 auto;
+}
+
+.markdown-editor__toc {
+  width: 250px;
+  flex: 0 0 250px;
+  position: sticky;
+  top: 20px;
+  max-height: calc(100vh - 160px);
+  overflow: auto;
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.18);
 }
 
 .markdown-editor__preview-wrap {
@@ -254,48 +241,140 @@
 }
 
 .markdown-editor__preview-label {
-  margin-bottom: 12px;
-  font-size: 13px;
-  color: #495057;
+  margin-bottom: 10px;
+  color: #64748b;
+  font-weight: 600;
 }
 
-.markdown-editor--dark .markdown-editor__preview-label {
-  color: #adb5bd;
+.markdown-editor__preview {
+  padding: 24px 26px 32px;
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  box-shadow: 0 18px 48px rgba(15, 23, 42, 0.08);
+  color: #0f172a;
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.75;
 }
 
-.markdown-editor__toc {
-  width: 240px;
-  flex: 0 0 240px;
-  position: sticky;
-  top: 20px;
-  align-self: flex-start;
-  max-height: calc(100vh - 160px);
-  overflow: auto;
-  padding: 14px;
-  border: 1px solid #e0e0e0;
+.markdown-editor__preview h1,
+.markdown-editor__preview h2,
+.markdown-editor__preview h3,
+.markdown-editor__preview h4 {
+  line-height: 1.25;
+  color: #0f172a;
+}
+
+.markdown-editor__preview h1 {
+  font-size: 2rem;
+  margin: 0 0 0.8em;
+  padding-bottom: 0.4em;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.markdown-editor__preview h2 {
+  font-size: 1.55rem;
+  margin: 1.3em 0 0.7em;
+  padding-bottom: 0.35em;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.markdown-editor__preview h3 {
+  font-size: 1.2rem;
+  margin: 1.2em 0 0.6em;
+}
+
+.markdown-editor__preview p {
+  margin: 0 0 1em;
+  color: #1e293b;
+}
+
+.markdown-editor__preview ul,
+.markdown-editor__preview ol {
+  margin: 0 0 1em 1.5em;
+}
+
+.markdown-editor__preview li {
+  margin-bottom: 0.45em;
+}
+
+.markdown-editor__preview code {
+  padding: 0.18em 0.42em;
+  border-radius: 6px;
+  background: #e8eef6;
+  color: #0f172a;
+  font-family: 'JetBrains Mono', 'SFMono-Regular', 'Consolas', monospace;
+  font-size: 0.92em;
+}
+
+.markdown-editor__preview pre {
+  overflow-x: auto;
+  margin: 0 0 1em;
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: #0b1220;
+  color: #e2e8f0;
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.12);
+}
+
+.markdown-editor__preview pre code {
+  padding: 0;
+  background: transparent;
+  color: inherit;
+}
+
+.markdown-editor__preview blockquote {
+  margin: 0 0 1em;
+  padding: 12px 16px;
+  border-left: 4px solid #38bdf8;
+  border-radius: 0 12px 12px 0;
+  background: #f1f7ff;
+  color: #334155;
+}
+
+.markdown-editor__preview table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 1em;
+  overflow: hidden;
   border-radius: 12px;
-  background-color: #ffffff;
 }
 
-.markdown-editor--dark .markdown-editor__toc {
-  background-color: #2d2d2d;
-  border-color: #3e3e3e;
+.markdown-editor__preview th,
+.markdown-editor__preview td {
+  padding: 10px 12px;
+  border: 1px solid #dbe3ee;
+}
+
+.markdown-editor__preview th {
+  background: #e2e8f0;
+  font-weight: 700;
+}
+
+.markdown-editor__preview a {
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.markdown-editor__preview a:hover {
+  text-decoration: underline;
 }
 
 .markdown-editor__toc-title {
   margin-bottom: 10px;
-  font-size: 13px;
+  font-size: 0.75rem;
   font-weight: 700;
-  color: #343a40;
-}
-
-.markdown-editor--dark .markdown-editor__toc-title {
-  color: #f1f3f5;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  color: #64748b;
 }
 
 .markdown-editor__toc-empty {
-  font-size: 13px;
-  color: #868e96;
+  padding: 8px 0 4px;
+  color: #64748b;
+  font-size: 0.875rem;
 }
 
 .markdown-editor__toc-list {
@@ -304,242 +383,41 @@
   list-style: none;
 }
 
-.markdown-editor__toc-item {
-  margin: 0;
-}
-
-.markdown-editor__toc-item--level-1 .markdown-editor__toc-link {
-  padding-left: 0;
-}
-
-.markdown-editor__toc-item--level-2 .markdown-editor__toc-link {
-  padding-left: 12px;
-}
-
-.markdown-editor__toc-item--level-3 .markdown-editor__toc-link {
-  padding-left: 24px;
-}
-
-.markdown-editor__toc-item--level-4 .markdown-editor__toc-link {
-  padding-left: 36px;
-}
-
-.markdown-editor__toc-item--level-5 .markdown-editor__toc-link {
-  padding-left: 48px;
-}
-
-.markdown-editor__toc-item--level-6 .markdown-editor__toc-link {
-  padding-left: 60px;
-}
-
 .markdown-editor__toc-link {
   display: block;
-  padding: 6px 0;
-  border-radius: 6px;
-  color: #495057;
+  padding: 7px 10px;
+  border-radius: 10px;
+  color: #334155;
   text-decoration: none;
-  font-size: 13px;
-  line-height: 1.5;
+  font-size: 0.875rem;
+  line-height: 1.45;
 }
 
 .markdown-editor__toc-link:hover {
-  color: #007bff;
-  background-color: rgba(0, 123, 255, 0.08);
+  background: rgba(56, 189, 248, 0.1);
+  color: #0f172a;
 }
 
 .markdown-editor__toc-link--active {
-  color: #0056b3;
-  background-color: rgba(0, 123, 255, 0.16);
-  font-weight: 600;
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.14), rgba(99, 102, 241, 0.1));
+  color: #0f172a;
+  font-weight: 700;
 }
 
 .markdown-editor__toc-link:focus-visible {
-  outline: 2px solid #0d6efd;
+  outline: 2px solid #38bdf8;
   outline-offset: 2px;
-}
-
-.markdown-editor--dark .markdown-editor__toc-link {
-  color: #dee2e6;
-}
-
-.markdown-editor--dark .markdown-editor__toc-link:hover {
-  color: #74c0fc;
-  background-color: rgba(116, 192, 252, 0.12);
-}
-
-.markdown-editor--dark .markdown-editor__toc-link--active {
-  color: #a5d8ff;
-  background-color: rgba(116, 192, 252, 0.2);
-}
-
-.markdown-editor__heading {
-  scroll-margin-top: 20px;
-}
-
-.markdown-editor__preview {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell,
-    sans-serif;
-  font-size: 14px;
-  line-height: 1.6;
-  color: #333;
-}
-
-.markdown-editor--dark .markdown-editor__preview {
-  color: #e0e0e0;
-}
-
-.markdown-editor__error {
-  color: #c62828;
-  padding: 12px;
-  background-color: #ffebee;
-  border-radius: 6px;
-  font-size: 14px;
-}
-
-.markdown-editor--dark .markdown-editor__error {
-  background-color: #3e2723;
-  color: #ffab91;
-}
-
-.markdown-editor__preview h1 {
-  font-size: 2em;
-  margin-top: 0;
-  margin-bottom: 0.5em;
-  font-weight: 600;
-}
-
-.markdown-editor__preview h2 {
-  font-size: 1.5em;
-  margin-top: 1.5em;
-  margin-bottom: 0.5em;
-  font-weight: 600;
-}
-
-.markdown-editor__preview h3 {
-  font-size: 1.2em;
-  margin-top: 1.5em;
-  margin-bottom: 0.5em;
-  font-weight: 600;
-}
-
-.markdown-editor__preview h4 {
-  font-size: 1em;
-  margin-top: 1.5em;
-  margin-bottom: 0.5em;
-  font-weight: 600;
-}
-
-.markdown-editor__preview p {
-  margin-bottom: 1em;
-}
-
-.markdown-editor__preview ul,
-.markdown-editor__preview ol {
-  margin-left: 2em;
-  margin-bottom: 1em;
-}
-
-.markdown-editor__preview li {
-  margin-bottom: 0.5em;
-}
-
-.markdown-editor__preview code {
-  background-color: #f4f4f4;
-  padding: 0.2em 0.4em;
-  border-radius: 3px;
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-  font-size: 0.9em;
-}
-
-.markdown-editor--dark .markdown-editor__preview code {
-  background-color: #3e3e3e;
-}
-
-.markdown-editor__preview pre {
-  background-color: #f4f4f4;
-  padding: 1em;
-  border-radius: 5px;
-  overflow-x: auto;
-  margin-bottom: 1em;
-}
-
-.markdown-editor--dark .markdown-editor__preview pre {
-  background-color: #3e3e3e;
-}
-
-.markdown-editor__preview pre code {
-  background-color: transparent;
-  padding: 0;
-}
-
-.markdown-editor__preview blockquote {
-  border-left: 4px solid #ddd;
-  padding-left: 1em;
-  margin-left: 0;
-  margin-bottom: 1em;
-  color: #666;
-}
-
-.markdown-editor--dark .markdown-editor__preview blockquote {
-  border-left-color: #495057;
-  color: #adb5bd;
-}
-
-.markdown-editor__preview table {
-  border-collapse: collapse;
-  width: 100%;
-  margin-bottom: 1em;
-}
-
-.markdown-editor__preview th,
-.markdown-editor__preview td {
-  border: 1px solid #ddd;
-  padding: 8px;
-  text-align: left;
-}
-
-.markdown-editor--dark .markdown-editor__preview th,
-.markdown-editor--dark .markdown-editor__preview td {
-  border-color: #495057;
-}
-
-.markdown-editor__preview th {
-  background-color: #f2f2f2;
-  font-weight: 600;
-}
-
-.markdown-editor--dark .markdown-editor__preview th {
-  background-color: #2d2d2d;
-}
-
-.markdown-editor__preview a {
-  color: #007bff;
-  text-decoration: none;
-}
-
-.markdown-editor__preview a:hover {
-  text-decoration: underline;
-}
-
-.markdown-editor--dark .markdown-editor__preview a {
-  color: #64b5f6;
 }
 
 .markdown-editor__status {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  padding: 8px 16px;
-  font-size: 12px;
-  color: #6c757d;
-  border-top: 1px solid #e0e0e0;
-  background-color: #f8f9fa;
-}
-
-.markdown-editor--dark .markdown-editor__status {
-  border-top-color: #3e3e3e;
-  background-color: #2d2d2d;
-  color: #adb5bd;
+  gap: 10px 14px;
+  padding: 10px 18px;
+  border-top: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(255, 255, 255, 0.82);
+  color: #64748b;
+  font-size: 0.8rem;
 }
 
 .markdown-editor__file-input {
@@ -555,141 +433,22 @@
 }
 
 .markdown-editor__pdf-host .markdown-editor__preview {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell,
-    sans-serif;
-  font-size: 14px;
-  line-height: 1.6;
-  color: #333;
+  box-shadow: none;
 }
 
-.markdown-editor__pdf-host .markdown-editor__preview pre {
-  page-break-inside: avoid;
+.markdown-editor__error {
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #fee2e2;
+  color: #991b1b;
 }
-
-.markdown-editor__pdf-host .markdown-editor__preview table,
-.markdown-editor__pdf-host .markdown-editor__mermaid {
-  page-break-inside: avoid;
-}
-
-.markdown-editor--preview-only {
-  overflow: hidden;
-}
-
-.markdown-editor--preview-only .markdown-editor__header {
-  padding-bottom: 16px;
-}
-
-.markdown-editor--preview-only #mdNewFile,
-.markdown-editor--preview-only #uploadMdFile,
-.markdown-editor--preview-only #saveMdBtn,
-.markdown-editor--preview-only #exportHtml,
-.markdown-editor--preview-only #themeToggle,
-.markdown-editor--preview-only .markdown-editor__toolbar,
-.markdown-editor--preview-only .markdown-editor__options,
-.markdown-editor--preview-only .markdown-editor__status {
-  display: none;
-}
-
-.markdown-editor--preview-only .markdown-editor__controls {
-  justify-content: space-between;
-}
-
-.markdown-editor--preview-only .markdown-editor__panel--editor {
-  display: none;
-}
-
-.markdown-editor--preview-only .markdown-editor__panel--preview {
-  flex: 1 1 100%;
-  overflow: auto;
-}
-
-.markdown-editor--preview-only .markdown-editor__preview-shell {
-  max-width: 1240px;
-  margin: 0 auto;
-}
-
-.markdown-editor--preview-only .markdown-editor__body {
-  display: flex;
-  overflow: hidden;
-}
-
-.markdown-editor--preview-only .markdown-editor__preview {
-  max-width: 1000px;
-  margin: 0 auto;
-}
-
-@media (max-width: 1024px) {
-  .markdown-editor__preview-shell {
-    flex-direction: column;
-  }
-
-  .markdown-editor__toc {
-    width: 100%;
-    flex-basis: auto;
-    position: static;
-    max-height: none;
-  }
-}
-
-@media (max-width: 768px) {
-  .markdown-editor--preview-only .markdown-editor__panel--editor {
-    display: none;
-  }
-
-  .markdown-editor--preview-only .markdown-editor__panel--preview {
-    flex: 1 1 100%;
-  }
-
-  .markdown-editor__body {
-    flex-direction: column;
-  }
-
-  .markdown-editor__panel--editor {
-    border-right: none;
-    border-bottom: 1px solid #e0e0e0;
-  }
-
-  .markdown-editor--dark .markdown-editor__panel--editor {
-    border-bottom-color: #3e3e3e;
-  }
-}
-
-.markdown-editor__panel::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-.markdown-editor__panel::-webkit-scrollbar-track {
-  background: #f1f1f1;
-}
-
-.markdown-editor--dark .markdown-editor__panel::-webkit-scrollbar-track {
-  background: #2d2d2d;
-}
-
-.markdown-editor__panel::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 4px;
-}
-
-.markdown-editor__panel::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
-}
-
-.markdown-editor--dark .markdown-editor__panel::-webkit-scrollbar-thumb {
-  background: #495057;
-}
-
-.markdown-editor--dark .markdown-editor__panel::-webkit-scrollbar-thumb:hover {
-  background: #6c757d;
-}
-
 
 .markdown-editor__mermaid {
-  margin-bottom: 1em;
-  padding: 12px;
-  border-radius: 8px;
-  background-color: #ffffff;
+  margin: 0 0 1em;
+  padding: 14px;
+  border-radius: 14px;
+  background: #ffffff;
+  border: 1px solid #dbe3ee;
   overflow-x: auto;
 }
 
@@ -700,10 +459,138 @@
   margin: 0 auto;
 }
 
-.markdown-editor--dark .markdown-editor__mermaid {
-  background-color: #2d2d2d;
+.markdown-editor--preview-only {
+  background:
+    radial-gradient(circle at top left, rgba(56, 189, 248, 0.08), transparent 28%),
+    linear-gradient(180deg, #f7f9fc 0%, #eef3f8 100%);
 }
 
-.markdown-editor__error--mermaid {
-  margin-bottom: 0;
+.markdown-editor--preview-only .markdown-editor__header {
+  padding-bottom: 12px;
+}
+
+.markdown-editor--preview-only .markdown-editor__controls {
+  padding: 2px 0;
+}
+
+.markdown-editor--preview-only #mdNewFile,
+.markdown-editor--preview-only #mdBackBtn,
+.markdown-editor--preview-only #uploadMdFile,
+.markdown-editor--preview-only #saveMdBtn,
+.markdown-editor--preview-only #exportHtml,
+.markdown-editor--preview-only #themeToggle,
+.markdown-editor--preview-only .markdown-editor__toolbar,
+.markdown-editor--preview-only .markdown-editor__options {
+  display: none;
+}
+
+.markdown-editor--preview-only .markdown-editor__controls {
+  justify-content: space-between;
+}
+
+.markdown-editor--preview-only .markdown-editor__body {
+  display: flex;
+}
+
+.markdown-editor--preview-only .markdown-editor__panel--editor {
+  display: none;
+}
+
+.markdown-editor--preview-only .markdown-editor__panel--preview {
+  flex: 1 1 100%;
+  background:
+    linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.markdown-editor--preview-only .markdown-editor__preview-shell {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.markdown-editor--preview-only .markdown-editor__preview-wrap {
+  width: 100%;
+}
+
+.markdown-editor--preview-only .markdown-editor__preview {
+  max-width: 1024px;
+}
+
+.markdown-editor--preview-only .markdown-editor__status {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .markdown-editor__preview-shell {
+    flex-direction: column;
+  }
+
+  .markdown-editor__toc {
+    width: 100%;
+    flex: 0 0 auto;
+    position: static;
+    max-height: none;
+  }
+
+  .markdown-editor__body {
+    flex-direction: column;
+  }
+
+  .markdown-editor__panel--editor {
+    border-right: 0;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+  }
+}
+
+@media (max-width: 768px) {
+  .markdown-editor__header {
+    padding: 14px 14px 12px;
+  }
+
+  .markdown-editor__panel {
+    padding: 16px;
+  }
+
+  .markdown-editor__preview {
+    padding: 20px 18px 26px;
+  }
+
+  .btn {
+    padding: 8px 12px;
+  }
+
+  .markdown-editor__options {
+    gap: 8px 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .markdown-editor__toolbar {
+    gap: 6px;
+  }
+
+  .markdown-editor__preview {
+    padding: 18px 14px 22px;
+  }
+
+  .markdown-editor__toc {
+    padding: 12px;
+  }
+}
+
+.markdown-editor__panel::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.markdown-editor__panel::-webkit-scrollbar-track {
+  background: rgba(148, 163, 184, 0.12);
+}
+
+.markdown-editor__panel::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.42);
+  border-radius: 999px;
+}
+
+.markdown-editor__panel::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.62);
 }

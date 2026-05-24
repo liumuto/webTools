@@ -425,10 +425,18 @@ class MarkdownEditor {
       return;
     }
     this.rootElement.classList.toggle('markdown-editor--preview-only', this.isPreviewOnly);
+    if (this.backBtn) {
+      this.backBtn.hidden = this.isPreviewOnly;
+      this.backBtn.setAttribute('aria-hidden', String(this.isPreviewOnly));
+      this.backBtn.tabIndex = this.isPreviewOnly ? -1 : 0;
+    }
     if (this.previewModeBtn) {
       this.previewModeBtn.textContent = this.isPreviewOnly ? '退出预览' : '预览模式';
-      this.previewModeBtn.classList.toggle('btn--secondary', this.isPreviewOnly);
+      this.previewModeBtn.setAttribute('aria-pressed', String(this.isPreviewOnly));
+      this.previewModeBtn.classList.toggle('btn--primary', this.isPreviewOnly);
+      this.previewModeBtn.classList.toggle('btn--secondary', !this.isPreviewOnly);
       this.previewModeBtn.classList.toggle('btn--outline', !this.isPreviewOnly);
+      this.previewModeBtn.classList.toggle('markdown-editor__preview-toggle--active', this.isPreviewOnly);
     }
   }
 

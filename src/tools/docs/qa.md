@@ -1680,4 +1680,88 @@
 ### 🚀 后续优化
 - 如需彻底确认，可继续做一次单文件版在 Chrome / Firefox / Edge 的真实滚动回归。
 - 若后续还遇到某浏览器 sticky 差异，可再针对容器层级做兼容性微调。
+## 馃搮 2026-05-24 - 网页工具文本处理模块扩展编解码与 JSON 功能
 
+### 馃攳 问题描述
+- **背景**：用户希望把网页工具里的文本处理和编解码能力补全到日常可用水平，覆盖更多高频转换场景。
+- **现象**：原有功能偏少，对 HTML 实体、Unicode、Hex、JWT 解析、JSON 键排序和路径提取等常用场景覆盖不足。
+- **影响范围**：影响网页工具中 `encode` 类别的单元，不涉及其他工具。
+
+### 馃挕 解决思路
+- **根因分析**：继续保留原有弹窗注册方式和选项卡结构，在同一工具里通过多个 tab 扩展能力。
+- **方案选择**：新增 HTML 实体、Unicode、Hex、JWT 和 JSON Path/排序/转义/反转义功能，并保持大多数数据处理都在页面内完成。
+- **技术选型**：使用原生 `TextEncoder` / `TextDecoder`、Base64 和 `atob` / `btoa` 实现转换，不引入新依赖。
+
+### 馃敡 代码变更
+- **修改文件**：
+  - `src/tools/js/tools/encoder.js`
+  - `src/tools/css/components.css`
+  - `src/tools/docs/qa.md`
+- **实现内容**：
+  - 扩展编解码工具 tab：Base64、URL、HTML 实体、Unicode、Hex、JSON、JWT、二维码
+  - 新增 JSON 格式化、压缩、键名排序、路径提取、字符串转义/反转义
+  - 新增 HTML 实体、Unicode、Hex 和 JWT 本地解析能力
+  - 补充面板布局样式，适配多 tab 和 JSON 辅助输入
+- **变更说明**：
+  - 二维码仍保持本地 canvas 占位生成方式，未接入第三方 QR 库
+  - JWT 仅做本地解码展示，不验证签名
+
+### 馃對 测试验证
+- **验证方法**：
+  - `node --check src/tools/js/tools/encoder.js`
+  - 在 Node 假 DOM 环境下实例化 `EncoderTool`
+  - 验证 Base64、JSON 格式化、JSON 排序、JSON Path、JWT 解析与二维码生成
+- **验证结果**：
+  - Base64、JSON、JWT 和二维码关键流程可正常输出
+  - 二维码生成后可得到 `currentQrCanvas`，下载按钮状态恢复正常
+  - 未接入真实浏览器回归，后续建议手工点一下新 tab 和 JSON 路径提取
+
+### 馃殌 后续优化
+- 可继续补一个真正的二维码库，替换当前 canvas 占位生成逻辑。
+- JSON Path 目前只做轻量路径解析，后续如需复杂筛选语法，可以再补一版更完整的解析器。
+
+## 📅 2026-05-24 - Markdown 编辑器预览模式隐藏返回按钮
+
+### 🔍 问题描述
+- **背景**：用户在工具集版 Markdown 编辑器中使用预览模式时，经常误点顶部“返回”按钮。
+- **现象**：“返回”按钮在预览模式下仍然可见，点击后会关闭 Markdown 编辑器弹窗，导致用户从编辑页退出。
+- **影响范围**：仅影响 `src/tools/js/tools/markdown-editor.js` 渲染出来的工具集版 Markdown 编辑器预览模式。
+
+### 💡 解决思路
+- **根因分析**：预览模式样式已经隐藏新建、上传、保存、导出、主题、工具栏、选项和状态栏，但遗漏了 `#mdBackBtn`。
+- **方案选择**：在预览模式隐藏规则中补上 `#mdBackBtn`，不改返回按钮本身的关闭逻辑。
+
+### 🔧 代码变更
+- **修改文件**：
+  - `src/tools/css/markdown-editor.css`
+  - `src/tools/docs/qa.md`
+- **关键实现点**：
+  - 新增 `.markdown-editor--preview-only #mdBackBtn { display: none; }` 所属选择器规则。
+  - 保持普通编辑模式下返回按钮可用。
+
+### ✅ 测试验证
+- **验证方法**：
+  - `node --check src/tools/js/tools/markdown-editor.js`
+  - 查看本次 diff，确认只增加预览模式下隐藏返回按钮的 CSS。
+- **验证结果**：
+  - 语法检查通过。
+  - 预览模式下返回按钮会随其它编辑相关控制一起隐藏，降低误触退出风险。
+## Markdown 缂栬緫鍣ㄩ瑙堟ā寮忚繑鍥炴寜閽啀娆＄▼搴忓寲鍥炵敓
+
+### 闂鎻忚堪
+- 鑳屾櫙：棰勮妯″紡涓嶅簲鏄剧ず杩斿洖鎸夐挳锛屼絾鍓嶄竴娆′慨澶嶅悗鍙堝洖鏉ヤ簡銆?
+- 鐜拌薄：鏍峰紡鍙互闅愯棌锛屼絾 DOM 鍏冪礌浠嶅湪锛岀劍鐐瑰拰鍙偣鍑昏涓鸿繕鍦ㄣ€?
+
+### 瑙ｅ喅鎬濊矾
+- 鏍瑰洜鍒嗘瀽：鍙瀹氭牱寮忓洖鏀跺灞傜殑鏈哄埗涓嬶紝鍙鎬у彲鑳戒細琚叾浠栨牱寮忓鐩栥€?
+- 鏂规閫夋嫨：鍦?`applyPreviewMode()` 閲岀洿鎺ュ `#mdBackBtn` 璁剧疆 `hidden`、`aria-hidden` 鍜?`tabIndex`锛岃瀹冨悓鏃跺け鍘绘樉绀恒€侀敭鐩樼劍鐐规煡鎵惧拰绔嬪嵆鍙敤鎬с€?
+- 涓轰粈涔堣繖鏍峰仛：鎶婃帶鍒舵壆鎴愮湡姝ｅ厓绱犲眰鐨勭姸鎬侊紝姣斿崟鍑诲啓涓€鏉℃牱寮忔洿绋冲綋銆?
+
+### 浠ｇ爜鍙樻洿
+- 淇敼鏂囦欢：`src/tools/js/tools/markdown-editor.js`、`src/tools/docs/qa.md`
+- 鍏抽敭瀹炵幇鐐? `applyPreviewMode()` 涓 `this.backBtn` 鍚屾璁剧疆 `hidden` / `aria-hidden` / `tabIndex`
+- 褰卞搷璇存槑：棰勮妯″紡涓嬭繑鍥炴寜閽凡涓嶅啀鍙锛屼篃涓嶅啀鍙劍鐐广€?
+
+### 娴嬭瘯楠岃瘉
+- 楠岃瘉鏂规硶：閲嶈 `applyPreviewMode()` 鍜屽搴旀牱寮忥紝鍐嶇湅 `node --check src/tools/js/tools/markdown-editor.js`
+- 楠岃瘉缁撴灉：棰勮妯″紡涓嬭繑鍥炴寜閽凡琚埌澶勭悊涓烘棤鍙鍏冪礌銆?

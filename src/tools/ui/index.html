@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>H5工具集平台 - WebTools Hub</title>
+  <title>WebTools Hub - 网页工具集</title>
   <link rel="stylesheet" href="../css/common.css">
   <link rel="stylesheet" href="../css/layout.css">
   <link rel="stylesheet" href="../css/components.css">
@@ -17,14 +17,14 @@
     <div class="header__container">
       <div class="header__logo">
         <h1 class="header__title">WebTools Hub</h1>
-        <p class="header__subtitle">实用工具集合</p>
+        <p class="header__subtitle">常用文本、时间、编码与颜色工具</p>
       </div>
       <nav class="header__nav">
-        <button class="header__nav-btn header__nav-btn--active" data-category="all">全部工具</button>
-        <button class="header__nav-btn" data-category="text">文本处理</button>
-        <button class="header__nav-btn" data-category="time">时间工具</button>
-        <button class="header__nav-btn" data-category="encode">编码转换</button>
-        <button class="header__nav-btn" data-category="color">颜色工具</button>
+        <button type="button" class="header__nav-btn header__nav-btn--active" data-category="all" aria-pressed="true">全部工具</button>
+        <button type="button" class="header__nav-btn" data-category="text" aria-pressed="false">文本处理</button>
+        <button type="button" class="header__nav-btn" data-category="time" aria-pressed="false">时间工具</button>
+        <button type="button" class="header__nav-btn" data-category="encode" aria-pressed="false">编码转换</button>
+        <button type="button" class="header__nav-btn" data-category="color" aria-pressed="false">颜色工具</button>
       </nav>
     </div>
   </header>
@@ -32,21 +32,41 @@
   <!-- 搜索和筛选区域 -->
   <section class="search-section">
     <div class="search-section__container">
-      <div class="search-bar">
-        <input type="text" class="search-bar__input" placeholder="搜索工具..." id="searchInput">
-        <button class="search-bar__btn" id="searchBtn" title="搜索工具" aria-label="搜索工具">
-          <svg class="search-bar__icon" viewBox="0 0 24 24">
-            <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-          </svg>
-        </button>
+      <div class="search-section__intro">
+        <p class="search-section__eyebrow">工具工作台</p>
+        <h2 class="search-section__headline">快速找到要用的功能</h2>
       </div>
-      <div class="favorites-toggle">
-        <button class="favorites-toggle__btn" id="favoritesBtn">
-          <svg class="favorites-toggle__icon" viewBox="0 0 24 24">
-            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-          </svg>
-          <span class="favorites-toggle__text">收藏</span>
-        </button>
+      <div class="search-section__meta" aria-live="polite">
+        <div class="search-section__stat">
+          <span class="search-section__stat-value" id="toolTotal">0</span>
+          <span class="search-section__stat-label">工具总数</span>
+        </div>
+        <div class="search-section__stat">
+          <span class="search-section__stat-value" id="toolVisible">0</span>
+          <span class="search-section__stat-label">当前显示</span>
+        </div>
+        <div class="search-section__stat">
+          <span class="search-section__stat-value" id="toolFavorites">0</span>
+          <span class="search-section__stat-label">已收藏</span>
+        </div>
+      </div>
+      <div class="search-section__controls">
+        <div class="search-bar">
+          <input type="text" class="search-bar__input" placeholder="搜索工具、功能或关键词..." id="searchInput">
+          <button type="button" class="search-bar__btn" id="searchBtn" title="搜索工具" aria-label="搜索工具">
+            <svg class="search-bar__icon" viewBox="0 0 24 24">
+              <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+            </svg>
+          </button>
+        </div>
+        <div class="favorites-toggle">
+          <button type="button" class="favorites-toggle__btn" id="favoritesBtn" aria-pressed="false">
+            <svg class="favorites-toggle__icon" viewBox="0 0 24 24">
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+            </svg>
+            <span class="favorites-toggle__text">收藏</span>
+          </button>
+        </div>
       </div>
     </div>
   </section>
@@ -54,12 +74,12 @@
   <!-- 工具展示区域 -->
   <main class="main">
     <div class="main__container">
-      <div class="tools-grid" id="toolsGrid">
+      <div class="tools-grid" id="toolsGrid" aria-live="polite" aria-busy="false">
         <!-- 工具卡片将通过JavaScript动态生成 -->
       </div>
       
       <!-- 空状态提示 -->
-      <div class="empty-state empty-state--hidden" id="emptyState">
+      <div class="empty-state empty-state--hidden" id="emptyState" role="status" aria-live="polite">
         <div class="empty-state__icon">
           <svg viewBox="0 0 24 24">
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
@@ -72,12 +92,12 @@
   </main>
 
   <!-- 工具详情弹窗 -->
-  <div class="modal" id="toolModal">
+  <div class="modal" id="toolModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="modal__overlay" id="modalOverlay"></div>
     <div class="modal__content">
       <div class="modal__header">
         <h2 class="modal__title" id="modalTitle">工具名称</h2>
-        <button class="modal__close" id="modalClose" title="关闭弹窗" aria-label="关闭弹窗">
+        <button type="button" class="modal__close" id="modalClose" title="关闭弹窗" aria-label="关闭弹窗">
           <svg viewBox="0 0 24 24">
             <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
           </svg>
@@ -90,7 +110,7 @@
   </div>
 
   <!-- 加载提示 -->
-  <div class="loading loading--hidden" id="loading">
+  <div class="loading loading--hidden" id="loading" aria-hidden="true">
     <div class="loading__spinner"></div>
     <p class="loading__text">加载中...</p>
   </div>
@@ -98,7 +118,7 @@
   <!-- 底部信息 -->
   <footer class="footer">
     <div class="footer__container">
-      <p class="footer__text">© 2024 WebTools Hub - 实用工具集合平台</p>
+      <p class="footer__text">© 2024 WebTools Hub - 网页工具集</p>
       <div class="footer__links">
         <a href="#" class="footer__link">关于我们</a>
         <a href="#" class="footer__link">使用帮助</a>
