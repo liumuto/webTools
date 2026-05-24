@@ -1765,3 +1765,31 @@
 ### 娴嬭瘯楠岃瘉
 - 楠岃瘉鏂规硶：閲嶈 `applyPreviewMode()` 鍜屽搴旀牱寮忥紝鍐嶇湅 `node --check src/tools/js/tools/markdown-editor.js`
 - 楠岃瘉缁撴灉：棰勮妯″紡涓嬭繑鍥炴寜閽凡琚埌澶勭悊涓烘棤鍙鍏冪礌銆?
+## Markdown 编辑器独立页样式迁移到共享 CSS
+
+### 问题描述
+- 背景：`src/tools/ui/markdown-editor.html` 之前内联了一整套样式，和 `src/tools/ui/index.html` 入口的 Markdown 编辑器风格存在两套实现。
+- 现象：独立页的视觉、预览态和响应式布局需要单独维护，后续一旦主入口改样式，独立页容易继续漂移。
+
+### 解决思路
+- 把独立页的基础外观迁移到 `src/tools/css/markdown-editor-standalone.css`。
+- 独立页改为直接引用 `common.css`、`layout.css`、`components.css` 和新的独立样式文件。
+- 追加单独的规则文件，明确独立页和工具入口的同步约束。
+
+### 代码变更
+- 修改文件：`src/tools/ui/markdown-editor.html`
+- 新增文件：`src/tools/css/markdown-editor-standalone.css`
+- 新增文件：`.cursor/rules/markdown-editor-sync.mdc`
+- 关键点：
+  - 删除独立页内联样式块。
+  - 让独立页直接复用共享 CSS 的按钮、面板、预览、目录和暗色样式。
+  - 将“两个入口样式必须同步”的约束写入规则文件。
+
+### 验证结果
+- 代码层面确认 `markdown-editor.html` 已不再保留大段内联样式。
+- 独立页头部已引用共享 CSS 和独立样式文件。
+- 新样式文件未使用 `!important`，也未引入新的 ID 选择器。
+
+### 后续建议
+- 以后修改 Markdown 编辑器视觉时，优先改共享 CSS，再检查两个入口。
+- 如果确实只改一个入口，需要在变更说明里明确同步范围。

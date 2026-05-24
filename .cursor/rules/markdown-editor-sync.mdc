@@ -1,0 +1,19 @@
+---
+description: Markdown 编辑器入口同步约束
+globs:
+  - "src/tools/ui/markdown-editor.html"
+  - "src/tools/js/tools/markdown-editor.js"
+  - "src/tools/css/markdown-editor.css"
+  - "src/tools/css/markdown-editor-standalone.css"
+alwaysApply: false
+---
+
+# Markdown 编辑器入口同步
+
+- `src/tools/ui/index.html` 入口使用 `src/tools/js/tools/markdown-editor.js` 和
+  `src/tools/css/markdown-editor.css`。
+- `src/tools/ui/markdown-editor.html` 是独立入口，样式必须和工具入口保持同一套视觉语言。
+- 修改 Markdown 编辑器的布局、预览模式、目录、导出、主题或主要视觉样式时，必须同时检查两个入口。
+- 可共用的设计变量、基础按钮、面板、预览排版优先复用 `src/tools/css/` 下的外部 CSS，
+  不要在独立 HTML 中重新写大段内联样式。
+- 如果只改其中一个入口，必须在变更说明里写清原因和未同步范围。
