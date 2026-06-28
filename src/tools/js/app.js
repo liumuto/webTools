@@ -8,7 +8,7 @@ class WebToolsApp {
     console.log('🏗️ WebToolsApp 构造函数开始执行...');
     
     this.tools = [];
-    this.categories = ['all', 'text', 'time', 'encode', 'color'];
+    this.categories = ['all', 'text', 'time', 'encode', 'color', 'life'];
     this.favorites = new Set();
     this.currentCategory = 'all';
     this.searchQuery = '';
@@ -84,7 +84,8 @@ class WebToolsApp {
         'TimeDisplayTool': window.TimeDisplayTool,
         'EncoderTool': window.EncoderTool,
         'ColorPickerTool': window.ColorPickerTool,
-        'CalendarReminderTool': window.CalendarReminderTool
+        'CalendarReminderTool': window.CalendarReminderTool,
+        'AssetsShowTool': window.AssetsShowTool
       };
 
       console.log('🔍 检查工具类可用性:');
@@ -158,6 +159,17 @@ class WebToolsApp {
         category: 'time',
         icon: 'calendar',
         component: window.CalendarReminderTool
+      });
+
+      // 资产分布工具
+      console.log('💼 注册资产分布工具...');
+      this.registerTool({
+        id: 'assets-show',
+        name: '资产分布',
+        description: '导入、编辑和可视化个人资产分布，支持JSON、CSV与Excel导出',
+        category: 'life',
+        icon: 'wallet',
+        component: window.AssetsShowTool
       });
     }
 
@@ -469,7 +481,8 @@ class WebToolsApp {
       scissors: `<svg viewBox="0 0 24 24"><path d="M9.64 7.64c.23-.5.36-1.05.36-1.64 0-2.21-1.79-4-4-4S2 3.79 2 6s1.79 4 4 4c.59 0 1.14-.13 1.64-.36L10 12l-2.36 2.36C7.14 14.13 6.59 14 6 14c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4c0-.59-.13-1.14-.36-1.64L12 14l7 7 3-3-7-7 2.36-2.36c.23.5.36 1.05.36 1.64 0 2.21 1.79 4 4 4s4-1.79 4-4-1.79-4-4-4c-.59 0-1.14.13-1.64.36L14 12l-2.36-2.36z"/></svg>`,
       clock: `<svg viewBox="0 0 24 24"><path d="M12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22C6.47,22 2,17.5 2,12A10,10 0 0,1 12,2M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z"/></svg>`,
       code: `<svg viewBox="0 0 24 24"><path d="M8,3A2,2 0 0,0 6,5V9A2,2 0 0,1 4,11H3V13H4A2,2 0 0,1 6,15V19A2,2 0 0,0 8,21H10V19H8V14A2,2 0 0,0 6,12A2,2 0 0,0 8,10V5H10V3M16,3A2,2 0 0,1 18,5V9A2,2 0 0,0 20,11H21V13H20A2,2 0 0,0 18,15V19A2,2 0 0,1 16,21H14V19H16V14A2,2 0 0,1 18,12A2,2 0 0,1 16,10V5H14V3H16Z"/></svg>`,
-      palette: `<svg viewBox="0 0 24 24"><path d="M12,3C12.55,3 13,3.45 13,4C13,4.55 12.55,5 12,5C11.45,5 11,4.55 11,4C11,3.45 11.45,3 12,3M7.5,8C8.33,8 9,8.67 9,9.5C9,10.33 8.33,11 7.5,11C6.67,11 6,10.33 6,9.5C6,8.67 6.67,8 7.5,8M16.5,8C17.33,8 18,8.67 18,9.5C18,10.33 17.33,11 16.5,11C15.67,11 15,10.33 15,9.5C15,8.67 15.67,8 16.5,8M12,6C9.79,6 8,7.79 8,10C8,11.38 8.56,12.63 9.5,13.5L10.5,14.5C11.33,15.33 12.67,15.33 13.5,14.5L14.5,13.5C15.44,12.63 16,11.38 16,10C16,7.79 14.21,6 12,6M12,2C13.1,2 14,2.9 14,4C14,5.1 13.1,6 12,6C10.9,6 10,5.1 10,4C10,2.9 10.9,2 12,2Z"/></svg>`
+      palette: `<svg viewBox="0 0 24 24"><path d="M12,3C12.55,3 13,3.45 13,4C13,4.55 12.55,5 12,5C11.45,5 11,4.55 11,4C11,3.45 11.45,3 12,3M7.5,8C8.33,8 9,8.67 9,9.5C9,10.33 8.33,11 7.5,11C6.67,11 6,10.33 6,9.5C6,8.67 6.67,8 7.5,8M16.5,8C17.33,8 18,8.67 18,9.5C18,10.33 17.33,11 16.5,11C15.67,11 15,10.33 15,9.5C15,8.67 15.67,8 16.5,8M12,6C9.79,6 8,7.79 8,10C8,11.38 8.56,12.63 9.5,13.5L10.5,14.5C11.33,15.33 12.67,15.33 13.5,14.5L14.5,13.5C15.44,12.63 16,11.38 16,10C16,7.79 14.21,6 12,6M12,2C13.1,2 14,2.9 14,4C14,5.1 13.1,6 12,6C10.9,6 10,5.1 10,4C10,2.9 10.9,2 12,2Z"/></svg>`,
+      wallet: `<svg viewBox="0 0 24 24"><path d="M21 7H5C3.9 7 3 6.1 3 5S3.9 3 5 3H19V5H5V5.02H21C21.55 5.02 22 5.47 22 6.02V20C22 20.55 21.55 21 21 21H4C2.9 21 2 20.1 2 19V5C2 2.79 3.79 1 6 1H19V3H6C4.9 3 4 3.9 4 5V19H20V17H16C14.9 17 14 16.1 14 15V12C14 10.9 14.9 10 16 10H22V8C22 7.45 21.55 7 21 7M16 12V15H20V12H16Z"/></svg>`
     };
 
     return icons[iconName] || icons.code;
@@ -483,7 +496,8 @@ class WebToolsApp {
       text: '文本处理',
       time: '时间工具',
       encode: '编码转换',
-      color: '颜色工具'
+      color: '颜色工具',
+      life: '生活工具'
     };
 
     return categoryNames[category] || category;
@@ -524,6 +538,7 @@ class WebToolsApp {
     `;
 
     modal.classList.toggle('modal--color-picker', toolConfig.id === 'color-picker');
+    modal.classList.toggle('modal--wide-tool', toolConfig.id === 'assets-show');
 
     // 显示弹窗
     modal.classList.add('modal--active');

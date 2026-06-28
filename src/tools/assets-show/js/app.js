@@ -9,6 +9,8 @@ const state = {
 	filters: { type: "", min: "", max: "", keyword: "" }
 };
 
+let resizeHandler = null;
+
 function cryptoRandomId() {
 	if (window.crypto?.randomUUID) return crypto.randomUUID();
 	return 'id-' + Math.random().toString(36).slice(2) + Date.now().toString(36);
@@ -598,6 +600,10 @@ function mapRowToAsset(row) {
 
 // 导入/导出
 function importFromExcel(file) {
+	if (!window.XLSX) {
+		alert('Excel 导入依赖加载失败，请检查网络后重试。');
+		return;
+	}
 	const reader = new FileReader();
 	reader.onload = (e) => {
 		const data = new Uint8Array(e.target.result);
@@ -688,6 +694,10 @@ function exportCSV() {
 }
 
 function exportXLSX() {
+	if (!window.XLSX) {
+		alert('Excel 导出依赖加载失败，请检查网络后重试。');
+		return;
+	}
 	const ws = XLSX.utils.json_to_sheet(state.assets);
 	const wb = XLSX.utils.book_new();
 	XLSX.utils.book_append_sheet(wb, ws, 'assets');
@@ -695,6 +705,10 @@ function exportXLSX() {
 }
 
 function downloadTemplate() {
+	if (!window.XLSX) {
+		alert('Excel 模板依赖加载失败，请检查网络后重试。');
+		return;
+	}
 	const header = ['name','type','value','currency','remark'];
 	const sample = [
 		{ name: '招商中证白酒ETF', type: '基金', value: 20000, currency: 'CNY', remark: '长期持有' },
@@ -721,6 +735,7 @@ function downloadBlob(blob, filename) {
 
 // 事件绑定
 function bindEvents() {
+	if (!document.getElementById('treemap')) return;
 	document.getElementById('btn-add').addEventListener('click', () => openModal());
 	document.getElementById('btn-cancel').addEventListener('click', closeModal);
 	document.getElementById('asset-form').addEventListener('submit', upsertAssetFromForm);
@@ -753,7 +768,9 @@ function bindEvents() {
 		if (action === 'delete' && asset) deleteAsset(id);
 	});
 	// 自适应重绘
-	window.addEventListener('resize', () => { renderTreemap(); });
+	if (resizeHandler) window.removeEventListener('resize', resizeHandler);
+	resizeHandler = () => { renderTreemap(); };
+	window.addEventListener('resize', resizeHandler);
 }
 
 function renderAll() {
@@ -761,8 +778,13 @@ function renderAll() {
 	renderTreemap();
 }
 
-// 初始化，测试下
-window.addEventListener('DOMContentLoaded', () => {
+window.initAssetsShowTool = function initAssetsShowTool() {
 	bindEvents();
 	renderAll();
+};
+
+window.addEventListener('DOMContentLoaded', () => {
+	if (document.getElementById('treemap')) {
+		window.initAssetsShowTool();
+	}
 }); 

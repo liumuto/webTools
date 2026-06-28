@@ -9,7 +9,7 @@ const app = express();
 app.use(cors());
 
 // 静态文件服务
-app.use(express.static('src/stocks/ui'));
+app.use(express.static(path.join(__dirname, '..', 'ui')));
 
 // 代理API请求
 app.use('/api', createProxyMiddleware({
@@ -26,11 +26,11 @@ app.use('/api', createProxyMiddleware({
 
 // 根路径重定向到股票页面
 app.get('/', (req, res) => {
-  res.redirect('/stock.html');
+  res.redirect('/myStock.html');
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`代理服务器运行在 http://localhost:${PORT}`);
-  console.log(`股票页面: http://localhost:${PORT}/stock.html`);
+  console.log(`股票页面: http://localhost:${PORT}/myStock.html`);
 });

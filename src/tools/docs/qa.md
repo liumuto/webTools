@@ -1793,3 +1793,64 @@
 ### 后续建议
 - 以后修改 Markdown 编辑器视觉时，优先改共享 CSS，再检查两个入口。
 - 如果确实只改一个入口，需要在变更说明里明确同步范围。
+## 2026-06-28 项目结构重构与资产分布工具接入
+
+### 🔍 问题描述
+- 背景：项目原本主线是网页工具集，但股票探索、Python 爬虫、资产展示和大量聚宽策略资料混在同一源码层级，导致 `src/` 边界不清。
+- 目标：按结构重构计划处理目录，并将原 `src/assetsShow` 合并为 WebTools Hub 内的“生活工具”。
+- 影响范围：项目目录结构、`.gitignore`、WebTools Hub 首页分类、工具注册、资产分布工具入口。
+
+### 💡 解决思路
+- 将主应用边界收敛到 `src/tools/`。
+- 将股票系统迁移到 `experiments/stocks/`，Python 实验迁移到 `experiments/python-tools/`，聚宽策略资料迁移到 `archive/stock-strategies/`。
+- 资产看板使用低风险 iframe 包装方式接入 Hub，保留原页面内部逻辑，避免一次性重写 treemap、导入导出和 CRUD 逻辑。
+
+### 🔧 代码变更
+- 修改 `.gitignore`：忽略 Python 缓存、日志、生成数据目录。
+- 新增 `README.md`：说明主入口和目录边界。
+- 新增 `docs/plan/project-structure-refactor-2026-06-28.md`：记录结构盘点和重构计划。
+- 移动 `src/assetsShow/` 到 `src/tools/assets-show/`。
+- 新增 `src/tools/js/tools/assets-show.js`：注册 `assets-show` 工具，分类为 `life`。
+- 修改 `src/tools/ui/index.html`：新增“生活工具”导航和 `assets-show.js` 脚本引用。
+- 修改 `src/tools/js/app.js`：增加 `life` 分类、钱包图标、资产分布备用注册和宽弹窗类。
+- 修改 `src/tools/css/components.css`：增加生活分类标签样式、宽弹窗样式和 iframe 容器样式。
+- 修改 `experiments/stocks/proxy/proxy-server.js`：修正迁移后的静态 UI 路径和首页跳转。
+
+### ✅ 测试验证
+- `node --check src/tools/js/app.js` 通过。
+- `node --check src/tools/js/tools/assets-show.js` 通过。
+- `node --check src/tools/assets-show/js/app.js` 通过。
+- `node --check experiments/stocks/proxy/proxy-server.js` 通过。
+- `rg` 确认 Hub 中已出现 `life`、`assets-show`、`AssetsShowTool`、`modal--wide-tool` 等接入点。
+
+### 🚀 后续优化
+- 当前资产分布工具通过 iframe 接入，优点是风险小；后续如需统一样式和状态管理，可再把 `src/tools/assets-show/js/app.js` 改造成原生工具类。
+- 股票实验目录内历史 QA/README 仍可能引用旧路径 `src/stocks`，这类历史记录未批量改写，避免破坏归档语境。
+
+## 2026-06-28 资产分布工具改为源码嵌入
+
+### 🔍 问题描述
+- 背景：资产分布工具已经迁移到 WebTools Hub 的“生活工具”，但首版使用 iframe 包装原页面。
+- 现象：iframe 接入在 Hub 弹窗内显示效果不稳定，和用户期望的“完整源码接入”不一致。
+- 影响范围：资产分布工具的 Hub 渲染方式、脚本加载顺序、嵌入版样式。
+
+### 💡 解决思路
+- 将原资产页主体 HTML 直接渲染到 `AssetsShowTool` 组件中，移除 iframe。
+- 复用原 `src/tools/assets-show/js/app.js` 的 treemap、CRUD、导入导出逻辑，只把初始化入口改为可由 Hub 手动调用。
+- 嵌入版样式全部收敛到 `.assets-show-tool` 命名空间下，避免原资产页的 `.modal`、`.btn`、`.main` 等全局样式污染 Hub。
+
+### 🔧 代码变更
+- 修改 `src/tools/js/tools/assets-show.js`：直接输出资产工具 DOM，并在 `init()` 中调用 `window.initAssetsShowTool()`。
+- 修改 `src/tools/assets-show/js/app.js`：暴露 `window.initAssetsShowTool`，保留独立页自动初始化；重复打开时清理旧 resize 监听；Excel 依赖缺失时给出提示。
+- 修改 `src/tools/ui/index.html`：在 Hub 主入口加载 SheetJS 和资产工具原始逻辑脚本。
+- 修改 `src/tools/css/components.css`：移除 iframe 容器样式，增加 `.assets-show-tool` 作用域下的工具栏、表格、treemap、内部编辑弹窗和响应式样式。
+
+### ✅ 测试验证
+- `node --check src/tools/assets-show/js/app.js` 通过。
+- `node --check src/tools/js/tools/assets-show.js` 通过。
+- `node --check src/tools/js/app.js` 通过。
+- `rg` 确认代码接入点中不再存在 `iframe` 或 `assets-show-tool__frame`。
+
+### 🚀 后续优化
+- 当前仍复用资产页原有全局函数和固定 ID，Hub 一次只打开一个工具弹窗时可正常工作。
+- 如果后续要支持同屏多个资产工具实例，可再把 `src/tools/assets-show/js/app.js` 改造成实例化类并将状态闭包化。

@@ -1,3 +1,14 @@
 # --- project-scaffold: docs/temp 临时区不入库（README 除外） ---
 docs/temp/*
 !docs/temp/README.md
+
+# Python/runtime artifacts
+__pycache__/
+*.py[cod]
+*.log
+
+# Generated data
+src/**/data/output/
+src/**/data/export/
+experiments/**/data/output/
+experiments/**/data/export/
